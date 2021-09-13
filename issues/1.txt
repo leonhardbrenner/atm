@@ -1,0 +1,46 @@
+delete_mongo https://github.com/leonhardbrenner/stonesoup/pull/10
+
+?Why are we not seeing model.Seeds update?
+    Let's see if we are running the task in gradle.
+        Yes, I can run and debug.
+    My hunch is FileBuilder is writing to the wrong place in *Generator.kt
+       I searched for it in build file
+       I checked my run configurations
+
+?Why is DTOGenerator not generating?
+    It was not specified in: buildSrc/src/main/kotlin/ModelGenerator.kt
+
+Brought back find_shit.py life_organizer in buildSrc/src/main/kotlin/generators/Generator.kt
+Confirmed that things work
+Created data for the get to retrieve.
+Retrieved the data through API and Exposed
+
+?Why is the chore table not created?
+    It is not loading because it breaks when loading chores.json.
+    It Now loads and looks like this:
+        exposed=> select * from chore;
+         id | parentId | childrenIds | name 
+        ----+----------+-------------+------
+          1 |       -1 | 1,3         | A
+          2 |        0 | 2           | B
+          3 |        1 |             | C
+          4 |        0 |             | D
+        (4 rows)
+    I will now disable the reloading of the tables in SeedsDbManager.
+
+TODO: Checkout "Reactive Streams" in IntelliJ
+TODO: Switch model from snakecase to camelCase
+
+I got IDs working in.
+    
+Handle childrenIds serialization using split and join for now.
+Changed the PlanPrioritizeApplication.get to get data from postgress.
+Got add, update, delete to work then delete all the old Mongo stuff.
+
+TODO: Introduce DAO tests.
+TODO: Introduce Service tests.
+
+Change git authentication: https://github.blog/2020-12-15-token-authentication-requirements-for-git-operations
+
+TODO: Although, I have added support for id I need to add support to not have it like in the example of Flat. I think
+it is as simple as changing the mixin from IntEntity to just Entity.

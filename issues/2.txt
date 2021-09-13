@@ -1,0 +1,17 @@
+Plan scheduling.
+     Add scheduling to the FE and wire to new table
+         x First wire new table and get some fixture data for schedule
+         x Implement the get so the data in the table is available in the FE
+         o Send the schedule in the POST
+         o Send the schedule in the PUT
+         o Handle schedule in POST
+         o Handle schedule in PUT
+         o Implement some editor changes to support our schedule.
+     Start by handling everything using queries on demand
+     Wire Quartz scheduler. Note: this is probably a later task.
+
+Fix the sortWith errors
+
+Create a live list and a way to us it instead of fixtures
+
+Upgrade Guice to 5.0 to get rid of error

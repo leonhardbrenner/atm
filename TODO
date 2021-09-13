@@ -1,0 +1,45 @@
+####Write the generated interfaces and dtos into the correct directory.
+####Delete the old and make it work again.
+#Make that configurable
+
+https://www.jetbrains.com/space/solutions/software-teams/#space-form
+
+Prioritize
+    move use items from components
+
+The purpose of this branch is to standardize on one way of doing things:
+    functionalComponent => RComponent
+    mongo -> exposed(postgres)
+
+New branch - port to postgres
+    make schema changes
+    create crud
+    replace mongo shit
+    
+New branch - change to functional style
+
+The purpose of this branch is to standardize on one way of doing things:
+    **functionalComponent => RComponent
+    mongo -> exposed(postgres)
+
+branch_navigator:
+    branch new <name>
+
+minimize_state_lifting
+    this is to fix a mess that I have with reusing a component. Currently, the outside has to write too much.
+
+plan
+    move this list to resources
+    load tree from flat file like this
+    create a directory structure for these TODO files I think the files represent projects.
+    create symbols characterizing the parent child relationship. Subtask vs Effects() vs (Location and Scheduling)
+        We can use => as continuation.
+    Allow for prefixes instead of the file itself
+        => Add a cleanup step which moves the steps into there
+    Deleting tasks should move them to trash file with a prefix pointer to the original location. This is to get old tasks out of the way.
+
+REVISIT: https://proandroiddev.com/react-native-bridge-with-kotlin-b2afde2f70b
+
+REVISIT: https://play.kotlinlang.org/hands-on/Introduction%20to%20Coroutines%20and%20Channels/09_Testing
+
+Generate all that stuff.

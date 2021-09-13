@@ -1,0 +1,14 @@
+[
+  {"choreId": 2,
+    "workHours": "9-17",
+    "completeBy": "20210909"
+  },
+  {"choreId": 3,
+    "workHours": "11-14",
+    "completeBy": "20220527"
+  },
+  {"choreId": 5,
+    "workHours": "5-9",
+    "completeBy": "20200830"
+  }
+]
