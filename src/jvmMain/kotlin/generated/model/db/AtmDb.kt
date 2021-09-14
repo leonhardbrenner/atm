@@ -119,8 +119,8 @@ object AtmDb {
   }
 
   object Transaction {
-    fun select(source: ResultRow) = AtmDto.Transaction(source[Table.timestamp],
-        source[Table.amount], source[Table.balance])
+    fun select(source: ResultRow) = AtmDto.Transaction(source[Table.id].value,
+        source[Table.timestamp], source[Table.amount], source[Table.balance])
     fun insert(it: InsertStatement<EntityID<Int>>, source: Atm.Transaction) {
       it[Table.timestamp] = source.timestamp
       it[Table.amount] = source.amount

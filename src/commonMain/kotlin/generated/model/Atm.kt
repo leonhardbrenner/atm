@@ -33,6 +33,8 @@ interface Atm {
   }
 
   interface Transaction {
+    val id: Int
+
     val timestamp: Long
 
     val amount: Double

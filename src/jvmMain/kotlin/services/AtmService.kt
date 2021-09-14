@@ -125,7 +125,7 @@ class LedgerService @Inject constructor(val ledgerDao: LedgerDao) {
     }
 }
 
-class Atm @Inject constructor(
+class AtmService @Inject constructor(
     val authorizationService: AuthorizationService,
     val ledgerService: LedgerService
 ) {
@@ -200,7 +200,7 @@ class Atm @Inject constructor(
 
 fun main(args:Array<String>) {
     DatabaseFactory.init()
-    val atm = Guice.createInjector(Atm.Module).getInstance<Atm>()
+    val atm = Guice.createInjector(AtmService.Module).getInstance<AtmService>()
     val accountId = "1434597300"
     val pin = "4557"
     atm.login(accountId, pin).let { token ->
