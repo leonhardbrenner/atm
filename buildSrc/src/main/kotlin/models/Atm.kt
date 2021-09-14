@@ -21,4 +21,10 @@ interface Atm {
         val balance: Double
     )
 
+    class Transaction(
+        val timestamp: Long,
+        val amount: Double,
+        val balance: Double
+    )
+
 }

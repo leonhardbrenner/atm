@@ -31,4 +31,12 @@ interface Atm {
 
     val balance: Double
   }
+
+  interface Transaction {
+    val timestamp: Long
+
+    val amount: Double
+
+    val balance: Double
+  }
 }

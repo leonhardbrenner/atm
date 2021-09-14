@@ -40,4 +40,15 @@ interface AtmBuilder {
     accountId ?: throw IllegalArgumentException("accountId is not nullable"),
     balance ?: throw IllegalArgumentException("balance is not nullable")
     )}
+
+  class Transaction(
+    var timestamp: Long?,
+    var amount: Double?,
+    var balance: Double?
+  ) {
+    fun build(): Atm.Transaction = AtmDto.Transaction(
+    timestamp ?: throw IllegalArgumentException("timestamp is not nullable"),
+    amount ?: throw IllegalArgumentException("amount is not nullable"),
+    balance ?: throw IllegalArgumentException("balance is not nullable")
+    )}
 }
