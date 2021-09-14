@@ -16,9 +16,10 @@ https://github.com/leonhardbrenner/atm/blob/main/src/jvmMain/kotlin/services/Atm
   
   AuthenticationService - coordinates authorizationPin and authorizationToken daos
 
-# Running(not positive this is write I run from IntelliJ):
+# Running
+  Note: not positive this is write I run from IntelliJ
   ./gradlew run services.AtmServiceKt
-  Note: I am using a postgres and have config. You will need these environment variable:
+  Note: You will need these environment variable. I am using a postgres and have config.
     DB_URL=jdbc:postgresql://localhost/test;DB_USER=test;DB_PASSWORD=test
 
 # Tests:
