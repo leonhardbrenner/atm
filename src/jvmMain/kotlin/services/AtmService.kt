@@ -4,7 +4,11 @@ import com.authzee.kotlinguice4.getInstance
 import com.google.inject.AbstractModule
 import com.google.inject.Guice
 import generated.dao.AtmDao
+import generated.model.AtmDto
+import generated.model.db.AtmDb
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.util.*
 import javax.inject.Inject
 
 typealias AccountId = String
@@ -12,14 +16,40 @@ typealias Amount = Double
 typealias Pin = String
 typealias Token = String
 
+class AuthorizationPinDao: AtmDao.AuthorizationPin() {
+    fun get(accountId: AccountId) = AtmDb.AuthorizationPin.Table.select {
+        AtmDb.AuthorizationPin.Table.accountId.eq(accountId)
+    }.map {
+        AtmDb.AuthorizationPin.select(it)
+    }.last()
+}
+
+class AuthorizationTokenDao: AtmDao.AuthorizationToken() {
+    fun get(accountId: AccountId) = AtmDb.AuthorizationToken.Table.select {
+        AtmDb.AuthorizationToken.Table.accountId.eq(accountId)
+    }.map {
+        AtmDb.AuthorizationToken.select(it)
+    }.last()
+}
+
+fun createToken() = UUID.randomUUID().toString()
+
+const val lifespan = 120000
+
 class AuthorizationService @Inject constructor(
-    val authorizationPin: AtmDao.AuthorizationPin,
-    val authorizationToken: AtmDao.AuthorizationToken
+    val authorizationPinDao: AuthorizationPinDao,
+    val authorizationTokenDao: AtmDao.AuthorizationToken
 ) {
     /**
      * This should lookup the account hashed_pin and compare against hash(pin) and return a token
      */
-    fun verifyPin(accountId: AccountId, pin: Pin): Token = "4321"
+    fun verifyPin(accountId: AccountId, pin: Pin): Token = transaction {
+        authorizationPinDao.get(accountId)
+        val token = createToken()
+        val expiration = System.currentTimeMillis()
+        authorizationTokenDao.create(AtmDto.AuthorizationToken(-1, accountId, token, expiration + lifespan))
+        token
+    }
 
     /**
      * This should lookup the account token and make sure that it is not expired.
@@ -133,8 +163,8 @@ class Atm @Inject constructor(
 fun main(args:Array<String>) {
     DatabaseFactory.init()
     val atm = Guice.createInjector(Atm.Module).getInstance<Atm>()
-    val accountId = "Len's Account"
-    val pin = "4321"
+    val accountId = "1434597300"
+    val pin = "4557"
     atm.authorizationService.verifyPin(accountId, pin).let { token ->
         println(token)
         println(atm.balance(token))

@@ -2,6 +2,7 @@ package generated.model
 
 import kotlin.Double
 import kotlin.Int
+import kotlin.Long
 import kotlin.String
 
 interface Atm {
@@ -20,7 +21,7 @@ interface Atm {
 
     val token: String
 
-    val expiration: String
+    val expiration: Long
   }
 
   interface Ledger {

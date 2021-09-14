@@ -7,6 +7,7 @@ import generated.model.Atm.Ledger
 import generated.model.AtmDto
 import kotlin.Double
 import kotlin.Int
+import kotlin.Long
 import kotlin.String
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
@@ -70,7 +71,7 @@ object AtmDb {
 
       val token: Column<String> = text("token")
 
-      val expiration: Column<String> = text("expiration")
+      val expiration: Column<Long> = long("expiration")
     }
 
     class Entity(
@@ -80,7 +81,7 @@ object AtmDb {
 
       var token: String by Table.token
 
-      var expiration: String by Table.expiration
+      var expiration: Long by Table.expiration
 
       companion object : IntEntityClass<Entity>(Table)
     }

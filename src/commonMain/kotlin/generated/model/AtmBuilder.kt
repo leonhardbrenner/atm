@@ -2,6 +2,7 @@ package generated.model
 
 import kotlin.Double
 import kotlin.Int
+import kotlin.Long
 import kotlin.String
 
 interface AtmBuilder {
@@ -20,7 +21,7 @@ interface AtmBuilder {
     var id: Int?,
     var accountId: String?,
     var token: String?,
-    var expiration: String?
+    var expiration: Long?
   ) {
     fun build(): Atm.AuthorizationToken = AtmDto.AuthorizationToken(
     id ?: throw IllegalArgumentException("id is not nullable"),

@@ -10,7 +10,7 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 
 class AtmDao {
-  class AuthorizationPin {
+  open class AuthorizationPin {
     fun index() = AtmDb.AuthorizationPin.Table.selectAll().map {
        AtmDb.AuthorizationPin.select(it)
     }
@@ -28,7 +28,7 @@ class AtmDao {
     fun destroy(id: Int) = AtmDb.AuthorizationPin.Table.deleteWhere {
         AtmDb.AuthorizationPin.Table.id eq id }        }
 
-  class AuthorizationToken {
+  open class AuthorizationToken {
     fun index() = AtmDb.AuthorizationToken.Table.selectAll().map {
        AtmDb.AuthorizationToken.select(it)
     }
@@ -46,7 +46,7 @@ class AtmDao {
     fun destroy(id: Int) = AtmDb.AuthorizationToken.Table.deleteWhere {
         AtmDb.AuthorizationToken.Table.id eq id }        }
 
-  class Ledger {
+  open class Ledger {
     fun index() = AtmDb.Ledger.Table.selectAll().map {
        AtmDb.Ledger.select(it)
     }

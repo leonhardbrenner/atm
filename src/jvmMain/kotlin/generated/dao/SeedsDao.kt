@@ -10,7 +10,7 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 
 class SeedsDao {
-  class DetailedSeed {
+  open class DetailedSeed {
     fun index() = SeedsDb.DetailedSeed.Table.selectAll().map {
        SeedsDb.DetailedSeed.select(it)
     }

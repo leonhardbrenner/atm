@@ -2,6 +2,7 @@ package generated.model
 
 import kotlin.Double
 import kotlin.Int
+import kotlin.Long
 import kotlin.String
 import kotlinx.serialization.Serializable
 
@@ -24,7 +25,7 @@ interface AtmDto {
     override val id: Int,
     override val accountId: String,
     override val token: String,
-    override val expiration: String
+    override val expiration: Long
   ) : Atm.AuthorizationToken {
     companion object {
       const val path: String = "/Atm/AuthorizationToken"
