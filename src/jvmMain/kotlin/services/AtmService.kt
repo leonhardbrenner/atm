@@ -18,8 +18,8 @@ typealias Amount = Double
 typealias Pin = String
 typealias Token = String
 
-class AuthorizationPinDao: AtmDao.AuthorizationPin() {
-    fun get(accountId: AccountId) = AtmDb.AuthorizationPin.Table.select {
+class AuthorizationPinDao: AtmDao.AuthorizationPin { //TODO - Make this and base interfaces
+    fun getByAccountId(accountId: AccountId) = AtmDb.AuthorizationPin.Table.select {
         AtmDb.AuthorizationPin.Table.accountId.eq(accountId)
     }.map {
         AtmDb.AuthorizationPin.select(it)
@@ -29,8 +29,8 @@ class AuthorizationPinDao: AtmDao.AuthorizationPin() {
     }
 }
 
-class AuthorizationTokenDao: AtmDao.AuthorizationToken() {
-    fun get(token: Token) = AtmDb.AuthorizationToken.Table.select {
+class AuthorizationTokenDao: AtmDao.AuthorizationToken {
+    fun getByToken(token: Token) = AtmDb.AuthorizationToken.Table.select {
         AtmDb.AuthorizationToken.Table.token.eq(token)
     }.map {
         AtmDb.AuthorizationToken.select(it)
@@ -39,12 +39,12 @@ class AuthorizationTokenDao: AtmDao.AuthorizationToken() {
         it.last()
     }
 
-    fun destroy(token: Token) = AtmDb.AuthorizationToken.Table.deleteWhere {
+    fun destroyByToken(token: Token) = AtmDb.AuthorizationToken.Table.deleteWhere {
         AtmDb.AuthorizationToken.Table.token eq token }
 }
 
-class LedgerDao: AtmDao.Ledger() {
-    fun get(accountId: AccountId) = AtmDb.Ledger.Table.select {
+class LedgerDao: AtmDao.Ledger {
+    fun getByAccountId(accountId: AccountId) = AtmDb.Ledger.Table.select {
         AtmDb.Ledger.Table.accountId.eq(accountId)
     }.map {
         AtmDb.Ledger.select(it)
@@ -55,7 +55,7 @@ class LedgerDao: AtmDao.Ledger() {
 }
 
 
-class TransactionDao: AtmDao.Transaction()
+class TransactionDao: AtmDao.Transaction
 
 fun createToken() = UUID.randomUUID().toString()
 
@@ -69,7 +69,7 @@ class AuthorizationService @Inject constructor(
      * This should lookup the account hashed_pin and compare against hash(pin) and return a token
      */
     fun verifyPin(accountId: AccountId, pin: Pin): Token = transaction {
-        if (pin == authorizationPinDao.get(accountId).pin) { //Todo - hash(pin)
+        if (pin == authorizationPinDao.getByAccountId(accountId).pin) { //Todo - hash(pin)
             val token = createToken()
             authorizationTokenDao.create(AtmDto.AuthorizationToken(-1, accountId, token, now() + lifespan))
             token
@@ -82,7 +82,7 @@ class AuthorizationService @Inject constructor(
      * This should lookup the account hashed_pin and compare against hash(pin) and return a token
      */
     fun verifyToken(token: Token): AccountId = transaction { //Todo - do this with token
-        authorizationTokenDao.get(token)?.let { result ->
+        authorizationTokenDao.getByToken(token)?.let { result ->
             val now = now()
             if (now > result.expiration)
                 throw Exception("Token has expired.")
@@ -96,7 +96,7 @@ class AuthorizationService @Inject constructor(
      * This should lookup the account token and make sure that it is not expired.
      */
     fun endSession(token: Token) = transaction { //Todo - do this with token
-        authorizationTokenDao.destroy(token)
+        authorizationTokenDao.destroyByToken(token)
     }
 }
 
@@ -108,7 +108,7 @@ class LedgerService @Inject constructor(
     inner class Account(val accountId: AccountId) {
 
         fun withdraw(amount: Amount): AtmDto.Transaction = transaction {
-            val record = ledgerDao.get(accountId)
+            val record = ledgerDao.getByAccountId(accountId)
             if (amount > record.balance)
                 throw Exception("Funds are not available.")
             val updatedRecord = record.copy(balance = record.balance - amount)
@@ -120,7 +120,7 @@ class LedgerService @Inject constructor(
         }
 
         fun deposit(amount: Amount): AtmDto.Transaction = transaction {
-            val record = ledgerDao.get(accountId)
+            val record = ledgerDao.getByAccountId(accountId)
             val updatedRecord = record.copy(balance = record.balance + amount)
             ledgerDao.update(updatedRecord)
             val now = now()
