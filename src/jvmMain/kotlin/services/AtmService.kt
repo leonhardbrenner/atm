@@ -217,8 +217,12 @@ fun main(args:Array<String>) {
         atm.history(token).forEach {
             println(it)
         }
-        atm.logout(accountId)
-        println(atm.balance(token))
+        atm.logout(token)
+        try {
+            atm.balance(token)
+        } catch (ex: Exception) {
+            println(ex)
+        }
     }
 }
 
