@@ -23,6 +23,7 @@ interface Atm {
 
     class Transaction(
         val id: Int,
+        val accountId: String,
         val timestamp: Long,
         val amount: Double,
         val balance: Double

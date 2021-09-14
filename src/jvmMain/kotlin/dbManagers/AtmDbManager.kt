@@ -16,11 +16,13 @@ object AtmDBManager {
         SchemaUtils.drop(AtmDb.AuthorizationPin.Table)
         SchemaUtils.drop(AtmDb.AuthorizationToken.Table)
         SchemaUtils.drop(AtmDb.Ledger.Table)
+        SchemaUtils.drop(AtmDb.Transaction.Table)
     }
     fun create() = transaction {
         SchemaUtils.create(AtmDb.AuthorizationPin.Table)
         SchemaUtils.create(AtmDb.AuthorizationToken.Table)
         SchemaUtils.create(AtmDb.Ledger.Table)
+        SchemaUtils.create(AtmDb.Transaction.Table)
     }
     fun populate() = transaction {
         val jsonLoaders = AtmJsonLoaders(kMapper)

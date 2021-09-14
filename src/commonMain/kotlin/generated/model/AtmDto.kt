@@ -49,6 +49,7 @@ interface AtmDto {
   @Serializable
   data class Transaction(
     override val id: Int,
+    override val accountId: String,
     override val timestamp: Long,
     override val amount: Double,
     override val balance: Double
@@ -56,7 +57,7 @@ interface AtmDto {
     companion object {
       const val path: String = "/Atm/Transaction"
 
-      fun create(source: Atm.Transaction) = AtmDto.Transaction(source.id, source.timestamp,
-          source.amount, source.balance)}
+      fun create(source: Atm.Transaction) = AtmDto.Transaction(source.id, source.accountId,
+          source.timestamp, source.amount, source.balance)}
   }
 }

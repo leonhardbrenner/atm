@@ -4,6 +4,7 @@ import com.authzee.kotlinguice4.getInstance
 import com.google.inject.AbstractModule
 import com.google.inject.Guice
 import generated.dao.AtmDao
+import generated.model.Atm
 import generated.model.AtmDto
 import generated.model.db.AtmDb
 import org.jetbrains.exposed.sql.deleteWhere
@@ -43,8 +44,8 @@ class AuthorizationTokenDao: AtmDao.AuthorizationToken() {
 }
 
 class LedgerDao: AtmDao.Ledger() {
-    fun get(token: Token) = AtmDb.Ledger.Table.select {
-        AtmDb.Ledger.Table.accountId.eq(token)
+    fun get(accountId: AccountId) = AtmDb.Ledger.Table.select {
+        AtmDb.Ledger.Table.accountId.eq(accountId)
     }.map {
         AtmDb.Ledger.select(it)
     }.let {
@@ -52,6 +53,9 @@ class LedgerDao: AtmDao.Ledger() {
         it.last()
     }
 }
+
+
+class TransactionDao: AtmDao.Transaction()
 
 fun createToken() = UUID.randomUUID().toString()
 
@@ -67,8 +71,7 @@ class AuthorizationService @Inject constructor(
     fun verifyPin(accountId: AccountId, pin: Pin): Token = transaction {
         if (pin == authorizationPinDao.get(accountId).pin) { //Todo - hash(pin)
             val token = createToken()
-            val now = System.currentTimeMillis()
-            authorizationTokenDao.create(AtmDto.AuthorizationToken(-1, accountId, token, now + lifespan))
+            authorizationTokenDao.create(AtmDto.AuthorizationToken(-1, accountId, token, now() + lifespan))
             token
         } else {
             throw Exception("Invalid Pin")
@@ -80,8 +83,8 @@ class AuthorizationService @Inject constructor(
      */
     fun verifyToken(token: Token): AccountId = transaction { //Todo - do this with token
         authorizationTokenDao.get(token)?.let { result ->
-            val now = System.currentTimeMillis()
-            if (System.currentTimeMillis() > result.expiration)
+            val now = now()
+            if (now > result.expiration)
                 throw Exception("Token has expired.")
             //Todo - update the expiration
             authorizationTokenDao.update(result.copy(expiration = now + lifespan))
@@ -97,37 +100,43 @@ class AuthorizationService @Inject constructor(
     }
 }
 
-data class WithdrawResponse(val amount: Amount, val balance: Amount)
-data class DepositResponse(val amount: Amount, val balance: Amount)
-
-class LedgerService @Inject constructor(val ledgerDao: LedgerDao) {
+class LedgerService @Inject constructor(
+    val ledgerDao: LedgerDao,
+    val transactionDao: TransactionDao
+    ) {
 
     inner class Account(val accountId: AccountId) {
 
-        fun withdraw(amount: Amount): WithdrawResponse = transaction {
+        fun withdraw(amount: Amount): AtmDto.Transaction = transaction {
             val record = ledgerDao.get(accountId)
             if (amount > record.balance)
                 throw Exception("Funds are not available.")
             val updatedRecord = record.copy(balance = record.balance - amount)
             ledgerDao.update(updatedRecord)
-            WithdrawResponse(amount, updatedRecord.balance)
+            val now = now()
+            AtmDto.Transaction(-1, accountId, now, amount, updatedRecord.balance).apply {
+                transactionDao.create(this)
+            }
         }
 
-        fun deposit(amount: Amount): DepositResponse = transaction {
+        fun deposit(amount: Amount): AtmDto.Transaction = transaction {
             val record = ledgerDao.get(accountId)
-            record.copy(balance = record.balance + amount).let {
-                ledgerDao.update(it)
-                DepositResponse(amount, it.balance)
-            }
+            val updatedRecord = record.copy(balance = record.balance + amount)
+            ledgerDao.update(updatedRecord)
+            val now = now()
+            AtmDto.Transaction(-1, accountId, now, amount, updatedRecord.balance)
         }
 
         val balance get(): Double = transaction { ledgerDao.get(2).balance }
     }
 }
 
+fun now() = System.currentTimeMillis()
+
 class AtmService @Inject constructor(
     val authorizationService: AuthorizationService,
-    val ledgerService: LedgerService
+    val ledgerService: LedgerService,
+    val transactionDao: TransactionDao
 ) {
 
     object Module : AbstractModule() {
@@ -171,7 +180,7 @@ class AtmService @Inject constructor(
      *      Your account is overdrawn! You may not make withdrawals at this time.
      *
      */
-    fun withdraw(token: Token, amount: Amount): WithdrawResponse {
+    fun withdraw(token: Token, amount: Amount): Atm.Transaction {
         val accountId = authorizationService.verifyToken(token)
         return ledgerService.Account(accountId).withdraw(amount)
     }
@@ -182,19 +191,16 @@ class AtmService @Inject constructor(
      * Returns the account’s balance after deposit is made in the format:
      *      Current balance: <balance>
      */
-    fun deposit(token: Token, amount: Amount): DepositResponse {
+    fun deposit(token: Token, amount: Amount): Atm.Transaction {
         val accountId = authorizationService.verifyToken(token)
         return ledgerService.Account(accountId).deposit(amount)
     }
 
-    fun history(token: Token) {
-        val accountId = authorizationService.verifyToken(token)
-
+    fun history(token: Token) = transaction {
+        transactionDao.index()
     }
 
-    fun logout(token: Token) {
-        val accountId = authorizationService.endSession(token)
-    }
+    fun logout(token: Token) = authorizationService.endSession(token)
 
 }
 
@@ -205,15 +211,14 @@ fun main(args:Array<String>) {
     val pin = "4557"
     atm.login(accountId, pin).let { token ->
         println(token)
-        //println(atm.balance(token))
-        //println(atm.balance("Invalid Token"))
         println(atm.balance(token))
         println(atm.withdraw(token, 22.33))
         println(atm.deposit(token, 200.00))
-        atm.history(token)
+        atm.history(token).forEach {
+            println(it)
+        }
         atm.logout(accountId)
-        //atm.authorizationService.verifyToken(accountId, token) //This should not be available
-
+        println(atm.balance(token))
     }
 }
 
