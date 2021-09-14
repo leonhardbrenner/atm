@@ -1,20 +1,15 @@
 package applications
 
-//import applications.routing.*
-import generated.routing.SeedsRouting
 import com.google.inject.AbstractModule
 import javax.inject.Inject
 import io.ktor.routing.*
-import generated.dao.SeedsDao
-import services.SeedsService
 
 class CoreApplication @Inject constructor(
-    val dao: SeedsDao,
-    val detailedSeed: SeedsRouting.DetailedSeed,
+    //val detailedSeed: SeedsRouting.DetailedSeed,
     ) {
 
     fun routesFrom(routing: Routing) {
-        detailedSeed.routes(routing)
+        //detailedSeed.routes(routing)
     }
 
     object Module : AbstractModule() {
