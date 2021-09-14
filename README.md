@@ -3,12 +3,15 @@
 This project was forked from an open source template projects I wrote this year.
 
 # History
-I wrote this using a template project I have been working on. The history of that can be traced through these repos oldest to newest:
+I wrote this using a template project I have been working on.
+
+The history of that can be traced through these repos oldest to newest:
   https://github.com/leonhardbrenner/kitchensink - this was just getting some technologies integrated into a single stack in particular I was interested in using KotlinPoet to generate boilerplate for my types. Stuff like table(drop, create, load), Interfaces, Dtos, Daos, ...
 
-https://github.com/leonhardbrenner/stonesoup - this was the first public project to fork kitchensink it builds some tables and trees and uses them in a FE written in Kotlin as well.
+  https://github.com/leonhardbrenner/stonesoup - this was the first public project to fork kitchensink it builds some tables and trees and uses them in a FE written in Kotlin as well.
 
-https://github.com/leonhardbrenner/grow - this forked stonesoup to remove all of the application code
+  https://github.com/leonhardbrenner/grow - this forked stonesoup to remove all of the application code
+
 Finally, this repo is forked from grow.
 
 # Solution starting from my template project:
