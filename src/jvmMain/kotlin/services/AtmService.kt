@@ -54,8 +54,13 @@ class LedgerDao: AtmDao.Ledger {
     }
 }
 
-
-class TransactionDao: AtmDao.Transaction
+class TransactionDao: AtmDao.Transaction {
+    fun getByAccountId(accountId: AccountId) = AtmDb.Transaction.Table.select {
+        AtmDb.Transaction.Table.accountId.eq(accountId)
+    }.map {
+        AtmDb.Transaction.select(it)
+    }
+}
 
 fun createToken() = UUID.randomUUID().toString()
 
@@ -105,33 +110,31 @@ class LedgerService @Inject constructor(
     val transactionDao: TransactionDao
     ) {
 
-    inner class Account(val accountId: AccountId) {
 
-        fun withdraw(amount: Amount): AtmDto.Transaction = transaction {
-            val record = ledgerDao.getByAccountId(accountId)
-            if (amount > record.balance)
-                throw Exception("Funds are not available.")
-            val updatedRecord = record.copy(balance = record.balance - amount)
-            ledgerDao.update(updatedRecord)
-            val now = now()
-            AtmDto.Transaction(-1, accountId, now, amount, updatedRecord.balance).apply {
-                transactionDao.create(this)
-            }
+    fun withdraw(accountId: AccountId, amount: Amount): AtmDto.Transaction = transaction {
+        val record = ledgerDao.getByAccountId(accountId)
+        if (amount > record.balance)
+            throw Exception("Funds are not available.")
+        val updatedRecord = record.copy(balance = record.balance - amount)
+        ledgerDao.update(updatedRecord)
+        val now = now()
+        AtmDto.Transaction(-1, accountId, now, amount, updatedRecord.balance).apply {
+            transactionDao.create(this)
         }
+    }
 
-        fun deposit(amount: Amount): AtmDto.Transaction = transaction {
-            val record = ledgerDao.getByAccountId(accountId)
-            val updatedRecord = record.copy(balance = record.balance + amount)
-            ledgerDao.update(updatedRecord)
-            val now = now()
-            AtmDto.Transaction(-1, accountId, now, amount, updatedRecord.balance).apply {
-                transactionDao.create(this)
-            }
+    fun deposit(accountId: AccountId, amount: Amount): AtmDto.Transaction = transaction {
+        val record = ledgerDao.getByAccountId(accountId)
+        val updatedRecord = record.copy(balance = record.balance + amount)
+        ledgerDao.update(updatedRecord)
+        val now = now()
+        AtmDto.Transaction(-1, accountId, now, amount, updatedRecord.balance).apply {
+            transactionDao.create(this)
         }
+    }
 
-        val balance get(): Double = transaction {
-            ledgerDao.getByAccountId(accountId).balance
-        }
+    fun balance(accountId: AccountId): Double = transaction {
+        ledgerDao.getByAccountId(accountId).balance
     }
 }
 
@@ -157,7 +160,7 @@ class AtmService @Inject constructor(
 
     fun balance(token: Token): Double {
         val accountId = authorizationService.verifyToken(token)
-        return ledgerService.Account(accountId).balance
+        return ledgerService.balance(accountId)
     }
 
     /**
@@ -186,7 +189,7 @@ class AtmService @Inject constructor(
      */
     fun withdraw(token: Token, amount: Amount): Atm.Transaction {
         val accountId = authorizationService.verifyToken(token)
-        return ledgerService.Account(accountId).withdraw(amount)
+        return ledgerService.withdraw(accountId, amount)
     }
 
     /**
@@ -197,14 +200,17 @@ class AtmService @Inject constructor(
      */
     fun deposit(token: Token, amount: Amount): Atm.Transaction {
         val accountId = authorizationService.verifyToken(token)
-        return ledgerService.Account(accountId).deposit(amount)
+        return ledgerService.deposit(accountId, amount)
     }
 
     fun history(token: Token) = transaction {
-        transactionDao.index()
+        val accountId = authorizationService.verifyToken(token)
+        transactionDao.getByAccountId(accountId) //Todo - Get by accountId
     }
 
-    fun logout(token: Token) = authorizationService.endSession(token)
+    fun logout(token: Token) = transaction {
+        authorizationService.endSession(token)
+    }
 
 }
 

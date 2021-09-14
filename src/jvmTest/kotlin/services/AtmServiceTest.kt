@@ -3,7 +3,6 @@ package services
 import com.nhaarman.mockitokotlin2.*
 import generated.model.AtmDto
 import org.junit.Test
-import utils.then
 import kotlin.test.assertEquals
 
 //This is how I can mock final classes: https://antonioleiva.com/mockito-2-kotlin/
@@ -15,6 +14,7 @@ class AtmServiceTest {
     val pin = "4321"
     val pinRecord = AtmDto.AuthorizationPin(1, accountId, pin)
     val token = "XYZ"
+    val ledgerRecord = AtmDto.Ledger(123, accountId, 333.22)
 
     @Test
     fun `AuthorizationService - verifyPin`() {
@@ -73,7 +73,7 @@ class AtmServiceTest {
         }
         val mockTransactionDao = mock<TransactionDao>()
         val service = LedgerService(mockLedgerDao, mockTransactionDao)
-        service.Account(accountId).withdraw(20.33)
+        service.withdraw(accountId, 20.33)
         verify(mockLedgerDao).getByAccountId(any())
         verify(mockLedgerDao).update(any())
         verify(mockTransactionDao).create(any())
@@ -89,7 +89,7 @@ class AtmServiceTest {
         }
         val mockTransactionDao = mock<TransactionDao>()
         val service = LedgerService(mockLedgerDao, mockTransactionDao)
-        service.Account(accountId).deposit(20.33)
+        service.deposit(accountId, 20.33)
         verify(mockLedgerDao).getByAccountId(any())
         verify(mockLedgerDao).update(any())
         verify(mockTransactionDao).create(any())
@@ -97,7 +97,6 @@ class AtmServiceTest {
 
     @Test
     fun `LedgerService - balance`() {
-        val ledgerRecord = AtmDto.Ledger(123, accountId, 333.22)
         val mockLedgerDao = mock<LedgerDao>() {
             on { getByAccountId(any()) }.then {
                 ledgerRecord
@@ -105,19 +104,38 @@ class AtmServiceTest {
         }
         val mockTransactionDao = mock<TransactionDao>()
         val service = LedgerService(mockLedgerDao, mockTransactionDao)
-        val result = service.Account(accountId).balance
+        val result = service.balance(accountId)
         verify(mockLedgerDao).getByAccountId(any())
         assertEquals(ledgerRecord.balance, result)
     }
 
     @Test
     fun `AtmService - login`() {
-        TODO("Not implemented yet")
+        val mockAuthorizationService = mock<AuthorizationService>()
+        val mockLedgerService = mock<LedgerService>()
+        val mockTransactionDao = mock<TransactionDao>()
+        val service = AtmService(mockAuthorizationService, mockLedgerService, mockTransactionDao)
+        service.login(accountId, pin)
+        verify(mockAuthorizationService).verifyPin(any(), any())
     }
 
     @Test
     fun `AtmService - balance`() {
-        TODO("Not implemented yet")
+        val mockAuthorizationService = mock<AuthorizationService>() {
+            on { verifyToken(any()) }.then {
+                accountId
+            }
+        }
+        val mockLedgerService = mock<LedgerService> {
+            on { balance(eq(accountId)) }.then {
+                ledgerRecord.balance
+            }
+        }
+        val mockTransactionDao = mock<TransactionDao>()
+        val service = AtmService(mockAuthorizationService, mockLedgerService, mockTransactionDao)
+        service.balance(token)
+        verify(mockAuthorizationService).verifyToken(any())
+        verify(mockLedgerService).balance(any())
     }
 
     @Test
