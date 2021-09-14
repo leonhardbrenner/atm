@@ -26,7 +26,6 @@ class AtmServiceTest {
             mockAuthorizationPinDao,
             mockAuthorizationTokenDao
         )
-        assertEquals(pinRecord, mockAuthorizationPinDao.getByAccountId(accountId))
         val token = authorizationService.verifyPin(accountId, pin)
         verify(mockAuthorizationTokenDao).create(any())
     }
@@ -34,7 +33,23 @@ class AtmServiceTest {
 
     @Test
     fun `AuthorizationService - verifyToken`() {
-        TODO("Not implemented yet")
+        val accountId = "123456"
+        val pin = "4321"
+        val pinRecord = AtmDto.AuthorizationPin(1, accountId, pin)
+        val token = "XYZ"
+        val mockAuthorizationPinDao = mock<AuthorizationPinDao>()
+        val mockAuthorizationTokenDao = mock<AuthorizationTokenDao> {
+            on { getByToken(any()) }.then {
+                AtmDto.AuthorizationToken(123, accountId, token, Long.MAX_VALUE) //Todo - get this closer to 2 minutes
+            }
+        }
+        val authorizationService = AuthorizationService(
+            mockAuthorizationPinDao,
+            mockAuthorizationTokenDao
+        )
+        val result = authorizationService.verifyToken(token)
+        verify(mockAuthorizationTokenDao).update(any())
+        assertEquals(accountId, result)
     }
 
 
