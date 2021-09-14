@@ -16,16 +16,16 @@ https://github.com/leonhardbrenner/atm/blob/main/src/jvmMain/kotlin/services/Atm
   
   AuthenticationService - coordinates authorizationPin and authorizationToken daos
 
+# Running(not positive this is write I run from IntelliJ):
+  ./gradlew run services.AtmServiceKt
+  Note: I am using a postgres and have config. You will need these environment variable:
+    DB_URL=jdbc:postgresql://localhost/test;DB_USER=test;DB_PASSWORD=test
+
 # Tests:
 
 https://github.com/leonhardbrenner/atm/blob/main/src/jvmTest/kotlin/services/AtmServiceTest.kt
 
   The test are organized in the same order as the AtmService's classes and methods and use nomanclature <Service> - <method> - <sub test>
-
-To run this from command line *
-  ./gradlew run services.AtmServiceKt
-  Note: I am using a postgres and have config. You will need these environment variable:
-    DB_URL=jdbc:postgresql://localhost/test;DB_USER=test;DB_PASSWORD=test
   
 # Solution starting from my template project:
 
