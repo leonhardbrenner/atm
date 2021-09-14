@@ -124,10 +124,14 @@ class LedgerService @Inject constructor(
             val updatedRecord = record.copy(balance = record.balance + amount)
             ledgerDao.update(updatedRecord)
             val now = now()
-            AtmDto.Transaction(-1, accountId, now, amount, updatedRecord.balance)
+            AtmDto.Transaction(-1, accountId, now, amount, updatedRecord.balance).apply {
+                transactionDao.create(this)
+            }
         }
 
-        val balance get(): Double = transaction { ledgerDao.get(2).balance }
+        val balance get(): Double = transaction {
+            ledgerDao.getByAccountId(accountId).balance
+        }
     }
 }
 
