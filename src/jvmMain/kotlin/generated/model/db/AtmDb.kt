@@ -4,9 +4,11 @@ import generated.model.Atm
 import generated.model.Atm.AuthorizationPin
 import generated.model.Atm.AuthorizationToken
 import generated.model.Atm.Ledger
+import generated.model.Atm.Transaction
 import generated.model.AtmDto
 import kotlin.Double
 import kotlin.Int
+import kotlin.Long
 import kotlin.String
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
@@ -70,7 +72,7 @@ object AtmDb {
 
       val token: Column<String> = text("token")
 
-      val expiration: Column<String> = text("expiration")
+      val expiration: Column<Long> = long("expiration")
     }
 
     class Entity(
@@ -80,7 +82,7 @@ object AtmDb {
 
       var token: String by Table.token
 
-      var expiration: String by Table.expiration
+      var expiration: Long by Table.expiration
 
       companion object : IntEntityClass<Entity>(Table)
     }
@@ -109,6 +111,49 @@ object AtmDb {
       id: EntityID<Int>
     ) : IntEntity(id) {
       var accountId: String by Table.accountId
+
+      var balance: Double by Table.balance
+
+      companion object : IntEntityClass<Entity>(Table)
+    }
+  }
+
+  object Transaction {
+    fun select(source: ResultRow) = AtmDto.Transaction(source[Table.id].value,
+        source[Table.accountId], source[Table.timestamp], source[Table.amount],
+        source[Table.balance])
+    fun insert(it: InsertStatement<EntityID<Int>>, source: Atm.Transaction) {
+      it[Table.accountId] = source.accountId
+      it[Table.timestamp] = source.timestamp
+      it[Table.amount] = source.amount
+      it[Table.balance] = source.balance
+    }
+
+    fun update(it: UpdateStatement, source: Atm.Transaction) {
+      it[Table.accountId] = source.accountId
+      it[Table.timestamp] = source.timestamp
+      it[Table.amount] = source.amount
+      it[Table.balance] = source.balance
+    }
+
+    object Table : IntIdTable("Transaction") {
+      val accountId: Column<String> = text("accountId")
+
+      val timestamp: Column<Long> = long("timestamp")
+
+      val amount: Column<Double> = double("amount")
+
+      val balance: Column<Double> = double("balance")
+    }
+
+    class Entity(
+      id: EntityID<Int>
+    ) : IntEntity(id) {
+      var accountId: String by Table.accountId
+
+      var timestamp: Long by Table.timestamp
+
+      var amount: Double by Table.amount
 
       var balance: Double by Table.balance
 

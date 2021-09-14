@@ -20,11 +20,12 @@ object DatabaseFactory {
     private val dbPassword = appConfig.property("db.dbPassword").getString()
 
     fun init() {
-        Database.connect(hikari())
+        connect()
         //(un)comment to toggle rebuilding and reloading initial data.
         dbManagers.SeedsDBManager.apply { drop(); create(); populate() }
         dbManagers.AtmDBManager.apply { drop(); create(); populate() }
     }
+    fun connect() = Database.connect(hikari())
 
     private fun hikari(): HikariDataSource {
         val config = HikariConfig()

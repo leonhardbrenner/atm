@@ -2,6 +2,7 @@ package generated.model
 
 import kotlin.Double
 import kotlin.Int
+import kotlin.Long
 import kotlin.String
 import kotlinx.serialization.Serializable
 
@@ -24,7 +25,7 @@ interface AtmDto {
     override val id: Int,
     override val accountId: String,
     override val token: String,
-    override val expiration: String
+    override val expiration: Long
   ) : Atm.AuthorizationToken {
     companion object {
       const val path: String = "/Atm/AuthorizationToken"
@@ -43,5 +44,20 @@ interface AtmDto {
       const val path: String = "/Atm/Ledger"
 
       fun create(source: Atm.Ledger) = AtmDto.Ledger(source.id, source.accountId, source.balance)}
+  }
+
+  @Serializable
+  data class Transaction(
+    override val id: Int,
+    override val accountId: String,
+    override val timestamp: Long,
+    override val amount: Double,
+    override val balance: Double
+  ) : Atm.Transaction {
+    companion object {
+      const val path: String = "/Atm/Transaction"
+
+      fun create(source: Atm.Transaction) = AtmDto.Transaction(source.id, source.accountId,
+          source.timestamp, source.amount, source.balance)}
   }
 }

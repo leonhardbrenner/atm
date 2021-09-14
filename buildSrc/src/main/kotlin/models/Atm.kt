@@ -12,12 +12,20 @@ interface Atm {
         val id: Int,
         val accountId: String,
         val token: String,
-        val expiration: String
+        val expiration: Long
     )
 
     class Ledger(
         val id: Int,
         val accountId: String,
+        val balance: Double
+    )
+
+    class Transaction(
+        val id: Int,
+        val accountId: String,
+        val timestamp: Long,
+        val amount: Double,
         val balance: Double
     )
 
