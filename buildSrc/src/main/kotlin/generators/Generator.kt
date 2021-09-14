@@ -7,6 +7,6 @@ interface Generator {
     fun generate(namespace: Manifest.Namespace)
 
     val path
-        get() = "/home/lbrenner/projects/grow/src" //Todo - move to config
+        get() = "/home/lbrenner/projects/atm/src" //Todo - move to config
 
 }

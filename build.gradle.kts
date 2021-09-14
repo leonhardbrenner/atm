@@ -106,7 +106,9 @@ kotlin {
         val jvmTest by getting {
             dependencies {
                 implementation(kotlin("test-junit"))
-                implementation("io.mockk:mockk:1.10.4")
+                // https://mvnrepository.com/artifact/com.nhaarman.mockitokotlin2/mockito-kotlin
+                implementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0-alpha01")
+
             }
         }
 
