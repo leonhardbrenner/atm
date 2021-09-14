@@ -29,7 +29,10 @@ To run this from command line:
 
 As I mentioned I used a template project to write this. This is a summary of those steps.
 
-  First I define my types:  
+  First, I forked:
+    https://github.com/leonhardbrenner/grow
+  
+  Then I define my types:  
     https://github.com/leonhardbrenner/atm/blob/main/buildSrc/src/main/kotlin/models/Atm.kt
 
 From the commandline I run:
