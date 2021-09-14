@@ -21,21 +21,8 @@ open class ModelGenerator : DefaultTask() {
 
     @TaskAction
     fun generate() {
-        //val flat = Namespace(Flat::class)
-        //InterfaceGeneratorOld.generate(flat)
-        //DtoGeneratorOld.generate(flat)
-        //BuilderGeneratorOld.generate(flat)
-        //DbGeneratorOld.generate(flat)
-        //CsvLoaderGeneratorOld.generate(flat)
-        //
-        //val fancy = Namespace(Fancy::class)
-        //InterfaceGeneratorOld.generate(fancy)
-        //DtoGeneratorOld.generate(fancy)
-        //XXX - BuilderGenerator.generate(fancy)
-
         val seeds = Namespace(Seeds::class)
-        val atm = Namespace(Atm::class)
-        listOf(seeds, atm).forEach { namespace ->
+        listOf(seeds).forEach { namespace ->
             println("Generating ${namespace.name}")
             InterfaceGenerator.generate(namespace)
             DtoGenerator.generate(namespace)
@@ -43,7 +30,17 @@ open class ModelGenerator : DefaultTask() {
             DbGenerator.generate(namespace)
             DaoGenerator.generate(namespace)
             RouteGenerator.generate(namespace)
-            //ApiGenerator.generate(namespace)
+        }
+
+        val atm = Namespace(Atm::class)
+        listOf(atm).forEach { namespace ->
+            println("Generating ${namespace.name}")
+            InterfaceGenerator.generate(namespace)
+            DtoGenerator.generate(namespace)
+            BuilderGenerator.generate(namespace)
+            DbGenerator.generate(namespace)
+            DaoGenerator.generate(namespace)
+            //RouteGenerator.generate(namespace)
         }
 
     }
