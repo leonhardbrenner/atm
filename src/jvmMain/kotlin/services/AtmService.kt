@@ -110,11 +110,35 @@ class LedgerService @Inject constructor(
     val transactionDao: TransactionDao
     ) {
 
-
+    /**
+     * Removes value from the authorized account. The machine only contains $20 bills, so the withdrawal amount must be a multiple of 20.
+     * withdraw <value>
+     *
+     * If account has not been overdrawn, returns balance after withdrawal in the format:
+     *      Amount dispensed: $<x>
+     *      Current balance: <balance>
+     *
+     * If the account has been overdrawn with this transaction, removes a further $5 from their account, and returns:
+     *      Amount dispensed: $<x>
+     *      You have been charged an overdraft fee of $5. Current balance: <balance>
+     *
+     * The machine can’t dispense more money than it contains. If in the above two scenarios the machine contains less money than was
+     * requested, the withdrawal amount should be adjusted to be the amount in the machine and this should be prepended to the return value:
+     *      Unable to dispense full amount requested at this time.
+     *
+     * If instead there is no money in the machine, the return value should be this and only this:
+     *      Unable to process your withdrawal at this time.
+     *
+     * If the account is already overdrawn, do not perform any checks against the available money in the machine, do not process the withdrawal,
+     * and return only this:
+     *      Your account is overdrawn! You may not make withdrawals at this time.
+     *
+     */
     fun withdraw(accountId: AccountId, amount: Amount): AtmDto.Transaction = transaction {
         val record = ledgerDao.getByAccountId(accountId)
         if (amount > record.balance)
             throw Exception("Funds are not available.")
+        //Todo - handle exceptions better. We can extend Exception and build message as a format in toString()
         val updatedRecord = record.copy(balance = record.balance - amount)
         ledgerDao.update(updatedRecord)
         val now = now()
@@ -123,6 +147,12 @@ class LedgerService @Inject constructor(
         }
     }
 
+    /**
+     * Adds value to the authorized account. The deposited amount does not need to be a multiple of 20.
+     *      deposit <value>
+     * Returns the account’s balance after deposit is made in the format:
+     *      Current balance: <balance>
+     */
     fun deposit(accountId: AccountId, amount: Amount): AtmDto.Transaction = transaction {
         val record = ledgerDao.getByAccountId(accountId)
         val updatedRecord = record.copy(balance = record.balance + amount)
@@ -159,45 +189,15 @@ class AtmService @Inject constructor(
         authorizationService.verifyPin(accountId, pin)
 
     fun balance(token: Token): Double {
-        val accountId = authorizationService.verifyToken(token)
+        val accountId = authorizationService.verifyToken(token) //Todo - move this to AtmSession
         return ledgerService.balance(accountId)
     }
 
-    /**
-     * Removes value from the authorized account. The machine only contains $20 bills, so the withdrawal amount must be a multiple of 20.
-     * withdraw <value>
-     *
-     * If account has not been overdrawn, returns balance after withdrawal in the format:
-     *      Amount dispensed: $<x>
-     *      Current balance: <balance>
-     *
-     * If the account has been overdrawn with this transaction, removes a further $5 from their account, and returns:
-     *      Amount dispensed: $<x>
-     *      You have been charged an overdraft fee of $5. Current balance: <balance>
-     *
-     * The machine can’t dispense more money than it contains. If in the above two scenarios the machine contains less money than was
-     * requested, the withdrawal amount should be adjusted to be the amount in the machine and this should be prepended to the return value:
-     *      Unable to dispense full amount requested at this time.
-     *
-     * If instead there is no money in the machine, the return value should be this and only this:
-     *      Unable to process your withdrawal at this time.
-     *
-     * If the account is already overdrawn, do not perform any checks against the available money in the machine, do not process the withdrawal,
-     * and return only this:
-     *      Your account is overdrawn! You may not make withdrawals at this time.
-     *
-     */
     fun withdraw(token: Token, amount: Amount): Atm.Transaction {
         val accountId = authorizationService.verifyToken(token)
         return ledgerService.withdraw(accountId, amount)
     }
 
-    /**
-     * Adds value to the authorized account. The deposited amount does not need to be a multiple of 20.
-     *      deposit <value>
-     * Returns the account’s balance after deposit is made in the format:
-     *      Current balance: <balance>
-     */
     fun deposit(token: Token, amount: Amount): Atm.Transaction {
         val accountId = authorizationService.verifyToken(token)
         return ledgerService.deposit(accountId, amount)
@@ -213,6 +213,44 @@ class AtmService @Inject constructor(
     }
 
 }
+
+class AtmSession @Inject constructor(
+    val atmService: AtmService
+) {
+    var token: Token? = null
+
+    fun handleMessage(message: String) = message.split(' ').let { message ->
+        val command = message.first()
+        when (command) {
+            "login" -> {
+                val accountId = message[1]!!
+                val pin = message[2]!!
+                token = atmService.login(accountId, pin)
+                token
+            }
+            "balance" -> {
+                atmService.balance(token!!)
+            }
+            "withdraw" -> {
+                val amount = message[1]!!.toDouble()
+                atmService.withdraw(token!!, amount)
+            }
+            "deposit" -> {
+                val amount = message[1]!!.toDouble()
+                atmService.deposit(token!!, amount)
+            }
+            "history" -> {
+                atmService.history(token!!)
+            }
+            "logout" -> {
+                atmService.logout(token!!)
+                token = null
+            }
+            else -> throw Exception("Unknown command [$message]")
+        }
+    }
+}
+
 
 fun main(args:Array<String>) {
     DatabaseFactory.init()

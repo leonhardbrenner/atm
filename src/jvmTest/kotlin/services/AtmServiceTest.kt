@@ -16,6 +16,7 @@ class AtmServiceTest {
     val token = "XYZ"
     val ledgerRecord = AtmDto.Ledger(123, accountId, 333.22)
     val amount = 99.99
+
     @Test
     fun `AuthorizationService - verifyPin`() {
         val mockAuthorizationPinDao = mock<AuthorizationPinDao> {
@@ -193,4 +194,52 @@ class AtmServiceTest {
         verify(mockAuthorizationService).endSession(any())
     }
 
+    @Test fun `AtmSession - cli - login`(){
+        val mockAtmService = mock<AtmService>()
+        val cli = AtmSession(mockAtmService)
+        cli.handleMessage("login ${accountId} ${pin}")
+        verify(mockAtmService).login(eq(accountId), eq(pin))
+    }
+
+    val mockAtmService = mock<AtmService> {
+        on { login(accountId, pin) }.then {
+            token
+        }
+    }
+
+    @Test fun `AtmSession - cli - balance`(){
+        val cli = AtmSession(mockAtmService)
+        cli.handleMessage("login ${accountId} ${pin}")
+        cli.handleMessage("balance")
+        verify(mockAtmService).balance(eq(token))
+    }
+
+    @Test fun `AtmSession - cli - withdraw`(){
+        val cli = AtmSession(mockAtmService)
+        cli.handleMessage("login ${accountId} ${pin}")
+        cli.handleMessage("withdraw $amount")
+        verify(mockAtmService).withdraw(eq(token), eq(amount))
+    }
+
+    @Test fun `AtmSession - cli - deposit`(){
+        val cli = AtmSession(mockAtmService)
+        cli.handleMessage("login ${accountId} ${pin}")
+        cli.handleMessage("deposit $amount")
+        verify(mockAtmService).deposit(eq(token), eq(amount))
+    }
+
+    @Test fun `AtmSession - cli - history`(){
+        val cli = AtmSession(mockAtmService)
+        cli.handleMessage("login ${accountId} ${pin}")
+        cli.handleMessage("history")
+        verify(mockAtmService).history(eq(token))
+    }
+
+    @Test fun `AtmSession - cli - logout`(){
+        val cli = AtmSession(mockAtmService)
+        cli.handleMessage("login ${accountId} ${pin}")
+        cli.handleMessage("logout")
+        verify(mockAtmService).logout(eq(token))
+        assertEquals(null, cli.token)
+    }
 }
