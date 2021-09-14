@@ -1,6 +1,6 @@
 package components.seeds
 
-import SeedsApi
+import api.seeds.DetailedSeedsApi
 import components.seeds.DisplayComponent.ComponentStyles.inline
 import components.seeds.DisplayComponent.ComponentStyles.listDiv
 import com.ccfraser.muirwik.components.*
@@ -50,7 +50,7 @@ class RegisterComponent : RComponent<RegisterProps, RState>() {
 }
 
 private class DetailedSeed(props: DisplayProps): DisplayComponent<Seeds.DetailedSeed>(props) {
-    override suspend fun get() = SeedsApi.DetailedSeedsApi.index()
+    override suspend fun get() = DetailedSeedsApi().index()
     override fun Seeds.DetailedSeed.label() = name
     override fun Seeds.DetailedSeed.transform() = "$id $name"
 }
