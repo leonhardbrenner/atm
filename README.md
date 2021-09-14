@@ -16,13 +16,15 @@ Finally, this repo is forked from grow.
 
 # Solution starting from my template project:
 
-To begin with I define my types like this
+To begin with I define my types like this:
+
   https://github.com/leonhardbrenner/atm/blob/main/buildSrc/src/main/kotlin/models/Atm.kt
 
 From the commandline I run:
   ./gradlew generate
   
 This generates the following code for me:
+
   https://github.com/leonhardbrenner/atm/blob/main/src/commonMain/kotlin/generated/model/Atm.kt
   https://github.com/leonhardbrenner/atm/blob/main/src/commonMain/kotlin/generated/model/AtmDto.kt
   https://github.com/leonhardbrenner/atm/blob/main/src/jvmMain/kotlin/generated/model/db/AtmDb.kt
