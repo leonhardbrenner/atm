@@ -15,7 +15,7 @@ class AtmServiceTest {
     val pinRecord = AtmDto.AuthorizationPin(1, accountId, pin)
     val token = "XYZ"
     val ledgerRecord = AtmDto.Ledger(123, accountId, 333.22)
-
+    val amount = 99.99
     @Test
     fun `AuthorizationService - verifyPin`() {
         val mockAuthorizationPinDao = mock<AuthorizationPinDao> {
@@ -140,22 +140,57 @@ class AtmServiceTest {
 
     @Test
     fun `AtmService - withdraw`() {
-        TODO("Not implemented yet")
+        val mockAuthorizationService = mock<AuthorizationService>() {
+            on { verifyToken(any()) }.then {
+                accountId
+            }
+        }
+        val mockLedgerService = mock<LedgerService>()
+        val mockTransactionDao = mock<TransactionDao>()
+        val service = AtmService(mockAuthorizationService, mockLedgerService, mockTransactionDao)
+        service.withdraw(token, amount)
+        verify(mockAuthorizationService).verifyToken(any())
+        verify(mockLedgerService).withdraw(any(), any())
     }
 
     @Test
     fun `AtmService - deposit`() {
-        TODO("Not implemented yet")
+        val mockAuthorizationService = mock<AuthorizationService>() {
+            on { verifyToken(any()) }.then {
+                accountId
+            }
+        }
+        val mockLedgerService = mock<LedgerService>()
+        val mockTransactionDao = mock<TransactionDao>()
+        val service = AtmService(mockAuthorizationService, mockLedgerService, mockTransactionDao)
+        service.deposit(token, amount)
+        verify(mockAuthorizationService).verifyToken(any())
+        verify(mockLedgerService).deposit(any(), any())
     }
 
     @Test
     fun `AtmService - history`() {
-        TODO("Not implemented yet")
+        val mockAuthorizationService = mock<AuthorizationService>() {
+            on { verifyToken(any()) }.then {
+                accountId
+            }
+        }
+        val mockLedgerService = mock<LedgerService>()
+        val mockTransactionDao = mock<TransactionDao>()
+        val service = AtmService(mockAuthorizationService, mockLedgerService, mockTransactionDao)
+        service.history(token)
+        verify(mockAuthorizationService).verifyToken(any())
+        verify(mockTransactionDao).getByAccountId(any())
     }
 
     @Test
     fun `AtmService - logout`() {
-        TODO("Not implemented yet")
+        val mockAuthorizationService = mock<AuthorizationService>()
+        val mockLedgerService = mock<LedgerService>()
+        val mockTransactionDao = mock<TransactionDao>()
+        val service = AtmService(mockAuthorizationService, mockLedgerService, mockTransactionDao)
+        service.logout(token)
+        verify(mockAuthorizationService).endSession(any())
     }
 
 }
