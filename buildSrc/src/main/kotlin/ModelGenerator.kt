@@ -34,7 +34,8 @@ open class ModelGenerator : DefaultTask() {
         //XXX - BuilderGenerator.generate(fancy)
 
         val seeds = Namespace(Seeds::class)
-        listOf(seeds).forEach { namespace ->
+        val atm = Namespace(Atm::class)
+        listOf(seeds, atm).forEach { namespace ->
             println("Generating ${namespace.name}")
             InterfaceGenerator.generate(namespace)
             DtoGenerator.generate(namespace)
