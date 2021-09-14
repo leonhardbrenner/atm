@@ -176,15 +176,6 @@ class AtmService @Inject constructor(
     val transactionDao: TransactionDao
 ) {
 
-    object Module : AbstractModule() {
-        override fun configure() {
-            //bind(CoroutineDatabase::class.java).toInstance(database())
-        }
-
-    }
-
-    data class Result(val message: String, val amount: Amount)
-
     fun login(accountId: AccountId, pin: Pin) =
         authorizationService.verifyPin(accountId, pin)
 
@@ -218,6 +209,12 @@ class AtmSession @Inject constructor(
     val atmService: AtmService
 ) {
     var token: Token? = null
+
+    object Module : AbstractModule() {
+        override fun configure() {
+            //bind(CoroutineDatabase::class.java).toInstance(database())
+        }
+    }
 
     fun handleMessage(message: String) = message.split(' ').let { message ->
         val command = message.first()
@@ -254,23 +251,25 @@ class AtmSession @Inject constructor(
 
 fun main(args:Array<String>) {
     DatabaseFactory.init()
-    val atm = Guice.createInjector(AtmService.Module).getInstance<AtmService>()
+    val atm = Guice.createInjector(AtmSession.Module).getInstance<AtmSession>()
+
     val accountId = "1434597300"
     val pin = "4557"
-    atm.login(accountId, pin).let { token ->
-        println(token)
-        println(atm.balance(token))
-        println(atm.withdraw(token, 22.33))
-        println(atm.deposit(token, 200.00))
-        atm.history(token).forEach {
-            println(it)
-        }
-        atm.logout(token)
-        try {
-            atm.balance(token)
-        } catch (ex: Exception) {
-            println(ex)
-        }
+    val commands = listOf(
+        "login $accountId $pin",
+        "balance",
+        "withdraw 22.33",
+        "deposit 200.00",
+        "history",
+        "logout"
+    )
+    commands.forEach { message ->
+        println(atm.handleMessage(message))
+    }
+    try {
+        atm.handleMessage("balance")
+    } catch (ex: Exception) {
+        print("Expected failure")
     }
 }
 
