@@ -17,7 +17,7 @@ Finally, this repo is forked from grow.
 # Solution starting from my template project:
 
 To begin with I define my types like this
-https://github.com/leonhardbrenner/atm/blob/main/buildSrc/src/main/kotlin/models/Atm.kt
+  https://github.com/leonhardbrenner/atm/blob/main/buildSrc/src/main/kotlin/models/Atm.kt
 
 From the commandline I run:
   ./gradlew generate
