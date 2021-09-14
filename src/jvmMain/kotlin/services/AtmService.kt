@@ -97,8 +97,8 @@ class AuthorizationService @Inject constructor(
     }
 }
 
-data class WithdrawResponse(val amountDispensed: Amount, val currentBalance: Amount)
-data class DepositResponse(val currentBalance: Amount)
+data class WithdrawResponse(val amount: Amount, val balance: Amount)
+data class DepositResponse(val amount: Amount, val balance: Amount)
 
 class LedgerService @Inject constructor(val ledgerDao: LedgerDao) {
 
@@ -113,12 +113,12 @@ class LedgerService @Inject constructor(val ledgerDao: LedgerDao) {
             WithdrawResponse(amount, updatedRecord.balance)
         }
 
-        fun deposit(amount: Amount): DepositResponse {
-            //Todo - first perform the transaction
-            transaction {
-                //ledgerDao
+        fun deposit(amount: Amount): DepositResponse = transaction {
+            val record = ledgerDao.get(accountId)
+            record.copy(balance = record.balance + amount).let {
+                ledgerDao.update(it)
+                DepositResponse(amount, it.balance)
             }
-            return DepositResponse(balance + amount)
         }
 
         val balance get(): Double = transaction { ledgerDao.get(2).balance }
@@ -182,9 +182,9 @@ class Atm @Inject constructor(
      * Returns the account’s balance after deposit is made in the format:
      *      Current balance: <balance>
      */
-    fun deposit(token: Token, amount: Amount) {
+    fun deposit(token: Token, amount: Amount): DepositResponse {
         val accountId = authorizationService.verifyToken(token)
-
+        return ledgerService.Account(accountId).deposit(amount)
     }
 
     fun history(token: Token) {
@@ -209,7 +209,7 @@ fun main(args:Array<String>) {
         //println(atm.balance("Invalid Token"))
         println(atm.balance(token))
         println(atm.withdraw(token, 22.33))
-        atm.deposit(token, 200.00)
+        println(atm.deposit(token, 200.00))
         atm.history(token)
         atm.logout(accountId)
         //atm.authorizationService.verifyToken(accountId, token) //This should not be available
