@@ -1,0 +1,5 @@
+[
+  {"serialNumber": "123456789", "balance": 10000 },
+  {"serialNumber": "234567891", "balance": 10000 },
+  {"serialNumber": "345678912", "balance": 10000 }
+]

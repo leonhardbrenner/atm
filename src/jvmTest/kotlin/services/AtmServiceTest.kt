@@ -18,7 +18,7 @@ class AtmServiceTest {
     val amount = 99.99
 
     @Test
-    fun `AuthorizationService - verifyPin`() {
+    fun `AuthorizationService - verifyPin - smoketest`() {
         val mockAuthorizationPinDao = mock<AuthorizationPinDao> {
             on { getByAccountId(any()) }.then {
                 pinRecord
@@ -35,7 +35,7 @@ class AtmServiceTest {
 
 
     @Test
-    fun `AuthorizationService - verifyToken`() {
+    fun `AuthorizationService - verifyToken - smoketest`() {
         val mockAuthorizationPinDao = mock<AuthorizationPinDao>()
         val mockAuthorizationTokenDao = mock<AuthorizationTokenDao> {
             on { getByToken(any()) }.then {
@@ -53,7 +53,7 @@ class AtmServiceTest {
 
 
     @Test
-    fun `AuthorizationService - endSession`() {
+    fun `AuthorizationService - endSession - smoketest`() {
         val mockAuthorizationPinDao = mock<AuthorizationPinDao>()
         val mockAuthorizationTokenDao = mock<AuthorizationTokenDao>()
         val service = AuthorizationService(
@@ -65,7 +65,12 @@ class AtmServiceTest {
     }
 
     @Test
-    fun `LedgerService - withdraw`() {
+    fun `LedgerService - withdraw - smoketest`() {
+        /**
+         * If account has not been overdrawn, returns balance after withdrawal in the format:
+         *      Amount dispensed: $<x>
+         *      Current balance: <balance>
+         */
         val ledgerRecord = AtmDto.Ledger(123, accountId, 333.22)
         val mockLedgerDao = mock<LedgerDao>() {
             on { getByAccountId(any()) }.then {
@@ -73,7 +78,8 @@ class AtmServiceTest {
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val service = LedgerService(mockLedgerDao, mockTransactionDao)
+        val mockMachineDao = mock<MachineDao>()
+        val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
         service.withdraw(accountId, 20.33)
         verify(mockLedgerDao).getByAccountId(any())
         verify(mockLedgerDao).update(any())
@@ -81,7 +87,12 @@ class AtmServiceTest {
     }
 
     @Test
-    fun `LedgerService - deposit`() {
+    fun `LedgerService - withdraw - templete delete after other subtests are done`() {
+        /**
+         * If account has not been overdrawn, returns balance after withdrawal in the format:
+         *      Amount dispensed: $<x>
+         *      Current balance: <balance>
+         */
         val ledgerRecord = AtmDto.Ledger(123, accountId, 333.22)
         val mockLedgerDao = mock<LedgerDao>() {
             on { getByAccountId(any()) }.then {
@@ -89,7 +100,120 @@ class AtmServiceTest {
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val service = LedgerService(mockLedgerDao, mockTransactionDao)
+        val mockMachineDao = mock<MachineDao>()
+        val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
+        val reciept = service.withdraw(accountId, 20.33)
+        verify(mockLedgerDao).getByAccountId(any())
+        verify(mockLedgerDao).update(any())
+        verify(mockTransactionDao).create(any())
+    }
+
+    @Test
+    fun `LedgerService - withdraw - overdrawn with this transaction`() {
+        /**
+         * If the account has been overdrawn with this transaction, removes a further $5 from their account, and returns:
+         *      Amount dispensed: $<x>
+         *      You have been charged an overdraft fee of $5. Current balance: <balance>
+         */
+        //XXX - Not implemented
+        val ledgerRecord = AtmDto.Ledger(123, accountId, 333.22)
+        val mockLedgerDao = mock<LedgerDao>() {
+            on { getByAccountId(any()) }.then {
+                ledgerRecord
+            }
+        }
+        val mockTransactionDao = mock<TransactionDao>()
+        val mockMachineDao = mock<MachineDao>()
+        val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
+        service.withdraw(accountId, 20.33)
+        verify(mockLedgerDao).getByAccountId(any())
+        verify(mockLedgerDao).update(any())
+        verify(mockTransactionDao).create(any())
+    }
+    @Test
+    fun `LedgerService - withdraw - not enough money`() {
+        /**
+         * The machine can’t dispense more money than it contains. If in the above two scenarios the machine contains less money than was
+         * requested, the withdrawal amount should be adjusted to be the amount in the machine and this should be prepended to the return value:
+         *      Unable to dispense full amount requested at this time.
+         */
+        //XXX - Not implemented
+        val ledgerRecord = AtmDto.Ledger(123, accountId, 333.22)
+        val mockLedgerDao = mock<LedgerDao>() {
+            on { getByAccountId(any()) }.then {
+                ledgerRecord
+            }
+        }
+        val mockTransactionDao = mock<TransactionDao>()
+        val mockMachineDao = mock<MachineDao>()
+        val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
+        service.withdraw(accountId, 20.33)
+        verify(mockLedgerDao).getByAccountId(any())
+        verify(mockLedgerDao).update(any())
+        verify(mockTransactionDao).create(any())
+    }
+    @Test
+    fun `LedgerService - withdraw - no money`() {
+        /**
+         * If instead there is no money in the machine, the return value should be this and only this:
+         *      Unable to process your withdrawal at this time.
+         */
+        //XXX - Not implemented
+        val ledgerRecord = AtmDto.Ledger(123, accountId, 333.22)
+        val mockLedgerDao = mock<LedgerDao>() {
+            on { getByAccountId(any()) }.then {
+                ledgerRecord
+            }
+        }
+        val mockTransactionDao = mock<TransactionDao>()
+        val mockMachineDao = mock<MachineDao>()
+        val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
+        service.withdraw(accountId, 20.33)
+        verify(mockLedgerDao).getByAccountId(any())
+        verify(mockLedgerDao).update(any())
+        verify(mockTransactionDao).create(any())
+    }
+
+    @Test
+    fun `LedgerService - withdraw - already overdrawn`() {
+        /**
+         * If the account is already overdrawn, do not perform any checks against the available money in the machine, do not process the withdrawal,
+         * and return only this:
+         *      Your account is overdrawn! You may not make withdrawals at this time.
+         */
+        //XXX - Not implemented
+        val ledgerRecord = AtmDto.Ledger(123, accountId, 333.22)
+        val mockLedgerDao = mock<LedgerDao>() {
+            on { getByAccountId(any()) }.then {
+                ledgerRecord
+            }
+        }
+        val mockTransactionDao = mock<TransactionDao>()
+        val mockMachineDao = mock<MachineDao>()
+        val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
+        service.withdraw(accountId, 20.33)
+        verify(mockLedgerDao).getByAccountId(any())
+        verify(mockLedgerDao).update(any())
+        verify(mockTransactionDao).create(any())
+    }
+
+    @Test
+    fun `LedgerService - deposit - smoketest`() {
+        /**
+         * Adds value to the authorized account. The deposited amount does not need to be a multiple of 20.
+         *      deposit <value>
+         * Returns the account’s balance after deposit is made in the format:
+         *      Current balance: <balance>
+         */
+        val ledgerRecord = AtmDto.Ledger(123, accountId, 333.22)
+        val mockLedgerDao = mock<LedgerDao>() {
+            on { getByAccountId(any()) }.then {
+                ledgerRecord
+            }
+        }
+        val mockTransactionDao = mock<TransactionDao>()
+        val mockMachineDao = mock<MachineDao>()
+        val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
         service.deposit(accountId, 20.33)
         verify(mockLedgerDao).getByAccountId(any())
         verify(mockLedgerDao).update(any())
@@ -97,21 +221,22 @@ class AtmServiceTest {
     }
 
     @Test
-    fun `LedgerService - balance`() {
+    fun `LedgerService - balance - smoketest`() {
         val mockLedgerDao = mock<LedgerDao>() {
             on { getByAccountId(any()) }.then {
                 ledgerRecord
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val service = LedgerService(mockLedgerDao, mockTransactionDao)
+        val mockMachineDao = mock<MachineDao>()
+        val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
         val result = service.balance(accountId)
         verify(mockLedgerDao).getByAccountId(any())
         assertEquals(ledgerRecord.balance, result)
     }
 
     @Test
-    fun `AtmService - login`() {
+    fun `AtmService - login - smoketest`() {
         val mockAuthorizationService = mock<AuthorizationService>()
         val mockLedgerService = mock<LedgerService>()
         val mockTransactionDao = mock<TransactionDao>()
@@ -121,7 +246,7 @@ class AtmServiceTest {
     }
 
     @Test
-    fun `AtmService - balance`() {
+    fun `AtmService - balance - smoketest`() {
         val mockAuthorizationService = mock<AuthorizationService>() {
             on { verifyToken(any()) }.then {
                 accountId
@@ -140,7 +265,7 @@ class AtmServiceTest {
     }
 
     @Test
-    fun `AtmService - withdraw`() {
+    fun `AtmService - withdraw - smoketest`() {
         val mockAuthorizationService = mock<AuthorizationService>() {
             on { verifyToken(any()) }.then {
                 accountId
@@ -155,7 +280,7 @@ class AtmServiceTest {
     }
 
     @Test
-    fun `AtmService - deposit`() {
+    fun `AtmService - deposit - smoketest`() {
         val mockAuthorizationService = mock<AuthorizationService>() {
             on { verifyToken(any()) }.then {
                 accountId
@@ -170,7 +295,7 @@ class AtmServiceTest {
     }
 
     @Test
-    fun `AtmService - history`() {
+    fun `AtmService - history - smoketest`() {
         val mockAuthorizationService = mock<AuthorizationService>() {
             on { verifyToken(any()) }.then {
                 accountId
@@ -185,7 +310,7 @@ class AtmServiceTest {
     }
 
     @Test
-    fun `AtmService - logout`() {
+    fun `AtmService - logout - smoketest`() {
         val mockAuthorizationService = mock<AuthorizationService>()
         val mockLedgerService = mock<LedgerService>()
         val mockTransactionDao = mock<TransactionDao>()

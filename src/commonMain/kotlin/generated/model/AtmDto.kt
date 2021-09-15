@@ -47,6 +47,19 @@ interface AtmDto {
   }
 
   @Serializable
+  data class Machine(
+    override val id: Int,
+    override val serialNumber: String,
+    override val balance: Double
+  ) : Atm.Machine {
+    companion object {
+      const val path: String = "/Atm/Machine"
+
+      fun create(source: Atm.Machine) = AtmDto.Machine(source.id, source.serialNumber,
+          source.balance)}
+  }
+
+  @Serializable
   data class Transaction(
     override val id: Int,
     override val accountId: String,

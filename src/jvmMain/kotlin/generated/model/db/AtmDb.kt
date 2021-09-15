@@ -4,6 +4,7 @@ import generated.model.Atm
 import generated.model.Atm.AuthorizationPin
 import generated.model.Atm.AuthorizationToken
 import generated.model.Atm.Ledger
+import generated.model.Atm.Machine
 import generated.model.Atm.Transaction
 import generated.model.AtmDto
 import kotlin.Double
@@ -111,6 +112,36 @@ object AtmDb {
       id: EntityID<Int>
     ) : IntEntity(id) {
       var accountId: String by Table.accountId
+
+      var balance: Double by Table.balance
+
+      companion object : IntEntityClass<Entity>(Table)
+    }
+  }
+
+  object Machine {
+    fun select(source: ResultRow) = AtmDto.Machine(source[Table.id].value,
+        source[Table.serialNumber], source[Table.balance])
+    fun insert(it: InsertStatement<EntityID<Int>>, source: Atm.Machine) {
+      it[Table.serialNumber] = source.serialNumber
+      it[Table.balance] = source.balance
+    }
+
+    fun update(it: UpdateStatement, source: Atm.Machine) {
+      it[Table.serialNumber] = source.serialNumber
+      it[Table.balance] = source.balance
+    }
+
+    object Table : IntIdTable("Machine") {
+      val serialNumber: Column<String> = text("serialNumber")
+
+      val balance: Column<Double> = double("balance")
+    }
+
+    class Entity(
+      id: EntityID<Int>
+    ) : IntEntity(id) {
+      var serialNumber: String by Table.serialNumber
 
       var balance: Double by Table.balance
 

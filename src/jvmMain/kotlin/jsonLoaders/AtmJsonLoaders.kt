@@ -19,4 +19,9 @@ class AtmJsonLoaders @Inject constructor(val kMapper: ObjectMapper) {
             resourceText("atm/ledger.json")
         )
 
+    val machine: List<AtmDto.Machine>
+        get() = kMapper.readValue(
+            resourceText("atm/machine.json")
+        )
+
 }
