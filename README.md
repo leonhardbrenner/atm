@@ -1,4 +1,4 @@
-# Note: this is not fully implemented there are a list of follow up PRs below. Key points that are missing are:
+### Note: this is not fully implemented there are a list of follow up PRs below. Key points that are missing are:
 
   https://github.com/leonhardbrenner/atm/pull/4
   I need to return and handle messages and exceptions to be dispayed. Probably just a toString on a data class.
