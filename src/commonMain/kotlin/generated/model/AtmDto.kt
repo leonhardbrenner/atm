@@ -50,7 +50,7 @@ interface AtmDto {
   data class Machine(
     override val id: Int,
     override val serialNumber: String,
-    override val balance: String
+    override val balance: Double
   ) : Atm.Machine {
     companion object {
       const val path: String = "/Atm/Machine"

@@ -44,7 +44,7 @@ interface AtmBuilder {
   class Machine(
     var id: Int?,
     var serialNumber: String?,
-    var balance: String?
+    var balance: Double?
   ) {
     fun build(): Atm.Machine = AtmDto.Machine(
     id ?: throw IllegalArgumentException("id is not nullable"),

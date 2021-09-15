@@ -68,6 +68,9 @@ class MachineDao: AtmDao.Machine() {
         AtmDb.Machine.Table.serialNumber.eq(serialNumber)
     }.map {
         AtmDb.Machine.select(it)
+    }.let {
+        if (it.isEmpty()) throw Exception("No machine registered with serialNumber: serialNumber")
+        it.last()
     }
 }
 
@@ -114,44 +117,73 @@ class AuthorizationService @Inject constructor(
     }
 }
 
+data class Reciept(val amount: Double? = null, val accountError: String = "", val machineError: String = "") {
+    override fun toString() =
+        if (amount == null) {
+            """
+            $accountError
+            $machineError    
+            """.trimIndent()
+
+        } else {
+            """
+            Amount dispensed: $amount
+            Current balance: <balance>
+        
+            $accountError
+            $machineError
+            """.trimIndent()
+        }
+}
+
 class LedgerService @Inject constructor(
     val machineDao: MachineDao,
     val ledgerDao: LedgerDao,
     val transactionDao: TransactionDao
     ) {
 
-    fun withdraw(accountId: AccountId, amount: Amount): AtmDto.Transaction = transaction {
-        val machineLedger = machineDao.getSerialNumber("machineId")
+    fun withdraw(accountId: AccountId, amount: Amount): Reciept = transaction {
+        //XXX - Needs to come from config. It hardcoded to match fixtures
+        val machineLedger = machineDao.getSerialNumber("123456789")
         val customerLedger = ledgerDao.getByAccountId(accountId)
 
+        var fees = 0
+        var adjustedAmount = (amount / 20) * 20
+        var reciept = Reciept()
+        when {
+            (machineLedger.balance < 20) -> {
+                    reciept.copy(machineError = """Unable to process your withdrawal at this time.""")
+                }
+                amount > machineLedger.balance -> {
+                    reciept.copy(machineError = """Unable to dispense full amount requested at this time""")
+                    adjustedAmount = machineLedger.balance
+                }
+        }
         when  {
             //XXX - we need a machineDao so we can handle the following
             // Unable to dispense full amount requested at this time
             // Unable to process your withdrawal at this time.
-            amount < 0 ->
-                """
-                Your account is overdrawn! You may not make withdrawals at this time.    
-                """.trimIndent()
-            amount < customerLedger.balance ->
-                """
-                Amount dispensed: ${'$'}<x>
-                Current balance: <balance>
-                """.trimIndent()
-            amount > customerLedger.balance -> {
-                //TODO - it would be more polite to warn the customer
-                """
-                Amount dispensed: ${'$'}<x>
-                You have been charged an overdraft fee of ${'$'}5. Current balance: <balance>    
-                """.trimIndent()
+            customerLedger.balance < 0 -> {
+                reciept.copy(accountError = """Your account is overdrawn! You may not make withdrawals at this time.""")
+            }
+            adjustedAmount < customerLedger.balance -> {
+                reciept.copy(amount = adjustedAmount)
+            }
+            adjustedAmount > customerLedger.balance -> {
+                reciept.copy(
+                    amount = adjustedAmount,
+                    accountError = "You have been charged an overdraft fee of $5. Current balance: <balance>")
+                fees += 5
             }
         }
-
-        //Todo - handle exceptions better. We can extend Exception and build message as a format in toString()
-        val updatedRecord = customerLedger.copy(balance = customerLedger.balance - amount)
+        val totalAmount = amount + fees
+        val updatedRecord = customerLedger.copy(balance = customerLedger.balance - totalAmount)
         ledgerDao.update(updatedRecord)
+
         val now = now()
-        AtmDto.Transaction(-1, accountId, now, amount, updatedRecord.balance).apply {
-            transactionDao.create(this)
+        AtmDto.Transaction(-1, accountId, now, totalAmount, updatedRecord.balance).let {
+            transactionDao.create(it)
+            Reciept(it.amount)
         }
     }
 
@@ -186,7 +218,7 @@ class AtmService @Inject constructor(
         return ledgerService.balance(accountId)
     }
 
-    fun withdraw(token: Token, amount: Amount): Atm.Transaction {
+    fun withdraw(token: Token, amount: Amount): Reciept {
         val accountId = authorizationService.verifyToken(token)
         return ledgerService.withdraw(accountId, amount)
     }
@@ -210,7 +242,6 @@ class AtmService @Inject constructor(
 class AtmSession @Inject constructor(
     val atmService: AtmService
 ) {
-    var serialNumber: SerialNumber? = "123456789" //XXX - Needs to come from config. It hardcoded to match fixtures.
     var token: Token? = null
 
     object Module : AbstractModule() {

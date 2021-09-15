@@ -32,7 +32,7 @@ interface Atm {
     class Machine(
         val id: Int,
         val serialNumber: String,
-        val balance: String
+        val balance: Double
     )
 
 }

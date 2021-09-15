@@ -37,7 +37,7 @@ interface Atm {
 
     val serialNumber: String
 
-    val balance: String
+    val balance: Double
   }
 
   interface Transaction {

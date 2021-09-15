@@ -135,7 +135,7 @@ object AtmDb {
     object Table : IntIdTable("Machine") {
       val serialNumber: Column<String> = text("serialNumber")
 
-      val balance: Column<String> = text("balance")
+      val balance: Column<Double> = double("balance")
     }
 
     class Entity(
@@ -143,7 +143,7 @@ object AtmDb {
     ) : IntEntity(id) {
       var serialNumber: String by Table.serialNumber
 
-      var balance: String by Table.balance
+      var balance: Double by Table.balance
 
       companion object : IntEntityClass<Entity>(Table)
     }
