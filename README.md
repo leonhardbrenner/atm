@@ -8,7 +8,11 @@
   
   https://github.com/leonhardbrenner/atm/pull/5 : *not yet started but I code generate most of this so should not be more than an hour.
 
-  i need to add machine so I can know how much money is in the machine **this is important we can't finish withdraw without it.
+  add machine so ledger service can know how much money is in the machine **this is important we can't finish withdraw without it.
+
+  https://github.com/leonhardbrenner/atm/pull/6 :
+
+  when PR 6 is done I can finish the withdraw logic
 
 Anyway, feel free to leave comments on any of the follow up PRs as well as this one.
 
