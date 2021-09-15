@@ -19,7 +19,7 @@ typealias Pin = String
 typealias Token = String
 typealias SerialNumber = String
 
-class AuthorizationPinDao: AtmDao.AuthorizationPin() { //TODO - The generated Daos could be mixins (class -> interface)
+class AuthorizationPinDao: AtmDao.AuthorizationPin {
     fun getByAccountId(accountId: AccountId) = AtmDb.AuthorizationPin.Table.select {
         AtmDb.AuthorizationPin.Table.accountId.eq(accountId)
     }.map {
@@ -30,7 +30,7 @@ class AuthorizationPinDao: AtmDao.AuthorizationPin() { //TODO - The generated Da
     }
 }
 
-class AuthorizationTokenDao: AtmDao.AuthorizationToken() {
+class AuthorizationTokenDao: AtmDao.AuthorizationToken {
     fun getByToken(token: Token) = AtmDb.AuthorizationToken.Table.select {
         AtmDb.AuthorizationToken.Table.token.eq(token)
     }.map {
@@ -44,7 +44,7 @@ class AuthorizationTokenDao: AtmDao.AuthorizationToken() {
         AtmDb.AuthorizationToken.Table.token eq token }
 }
 
-class LedgerDao: AtmDao.Ledger() {
+class LedgerDao: AtmDao.Ledger {
     fun getByAccountId(accountId: AccountId) = AtmDb.Ledger.Table.select {
         AtmDb.Ledger.Table.accountId.eq(accountId)
     }.map {
@@ -55,7 +55,7 @@ class LedgerDao: AtmDao.Ledger() {
     }
 }
 
-class TransactionDao: AtmDao.Transaction() {
+class TransactionDao: AtmDao.Transaction {
     fun getByAccountId(accountId: AccountId) = AtmDb.Transaction.Table.select {
         AtmDb.Transaction.Table.accountId.eq(accountId)
     }.map {
@@ -63,7 +63,7 @@ class TransactionDao: AtmDao.Transaction() {
     }
 }
 
-class MachineDao: AtmDao.Machine() {
+class MachineDao: AtmDao.Machine {
     fun getSerialNumber(serialNumber: SerialNumber) = AtmDb.Machine.Table.select {
         AtmDb.Machine.Table.serialNumber.eq(serialNumber)
     }.map {
@@ -129,10 +129,10 @@ data class Reciept(val amount: Double? = null, val accountError: String = "", va
             """
             Amount dispensed: $amount
             Current balance: <balance>
-        
+            
             $accountError
             $machineError
-            """.trimIndent()
+            """.trimIndent().trimEnd()
         }
 }
 
