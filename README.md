@@ -74,6 +74,18 @@ This generates the following code for me:
 
 These classes represent the interfaces, dto, db code specific to my types, and daos with basic crud that are open to extending. I have generators that build the routes and client api for react Kotlin in the StoneSoup project as well.
 
+This is how generate all of that boiler plate:
+  https://github.com/leonhardbrenner/atm/blob/75fc4cfc4efc4696f5075f13adbf712da32cbb2f/build.gradle.kts#L152
+  https://github.com/leonhardbrenner/atm/blob/main/buildSrc/src/main/kotlin/ModelGenerator.kt
+
+All of the generators are variations of this:
+
+  https://github.com/leonhardbrenner/atm/blob/main/buildSrc/src/main/kotlin/generators/InterfaceGenerator.kt
+  
+My dtos and other presentations of the data implement the interface allowing me to supply any adapter that implements the type to a Dto.create. Another nice trick is I can use 'by' for my resources like this:
+
+  https://github.com/leonhardbrenner/stonesoup/blob/19273e2b94c3b6e7f5ad7266f1bf450233e33d65/src/commonMain/kotlin/models/SeedsResource.kt#L10
+
 Finally, I can write my services. In this case I have extended some of my Daos:
 
   https://github.com/leonhardbrenner/atm/blob/main/src/jvmTest/kotlin/services/AtmServiceTest.kt
