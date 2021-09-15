@@ -1,4 +1,3 @@
-import applications.MobileApplication
 import applications.CoreApplication
 import com.authzee.kotlinguice4.getInstance
 import com.google.inject.Guice
@@ -16,8 +15,6 @@ fun main() {
     DatabaseFactory.init()
     val coreApplication = Guice.createInjector(CoreApplication.Module)
         .getInstance<CoreApplication>()
-    val mobileApplication = Guice.createInjector(MobileApplication.Module)
-        .getInstance<MobileApplication>()
 
     val port = System.getenv("PORT")?.toInt() ?: 9090
     embeddedServer(Netty, port) {
@@ -51,7 +48,6 @@ fun main() {
             }
 
             coreApplication.routesFrom(this)
-            mobileApplication.routesFrom(this)
 
         }
     }.start(wait = true)
