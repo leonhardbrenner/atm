@@ -1,3 +1,7 @@
+## Atm implementation in Kolin
+
+This project was forked from an open source template projects I wrote this year.
+
 ### Note: this is not fully implemented there are a list of follow up PRs key points they are fixing:
 
   https://github.com/leonhardbrenner/atm/pull/4 :
@@ -15,10 +19,6 @@
   when PR 6 is done I can finish the withdraw logic
 
 Anyway, feel free to leave comments on any of the follow up PRs as well as this one.
-
-## Atm implementation in Kolin
-
-This project was forked from an open source template projects I wrote this year.
 
 # Implementation
 
