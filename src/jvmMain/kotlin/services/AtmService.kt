@@ -110,30 +110,6 @@ class LedgerService @Inject constructor(
     val transactionDao: TransactionDao
     ) {
 
-    /**
-     * Removes value from the authorized account. The machine only contains $20 bills, so the withdrawal amount must be a multiple of 20.
-     * withdraw <value>
-     *
-     * If account has not been overdrawn, returns balance after withdrawal in the format:
-     *      Amount dispensed: $<x>
-     *      Current balance: <balance>
-     *
-     * If the account has been overdrawn with this transaction, removes a further $5 from their account, and returns:
-     *      Amount dispensed: $<x>
-     *      You have been charged an overdraft fee of $5. Current balance: <balance>
-     *
-     * The machine can’t dispense more money than it contains. If in the above two scenarios the machine contains less money than was
-     * requested, the withdrawal amount should be adjusted to be the amount in the machine and this should be prepended to the return value:
-     *      Unable to dispense full amount requested at this time.
-     *
-     * If instead there is no money in the machine, the return value should be this and only this:
-     *      Unable to process your withdrawal at this time.
-     *
-     * If the account is already overdrawn, do not perform any checks against the available money in the machine, do not process the withdrawal,
-     * and return only this:
-     *      Your account is overdrawn! You may not make withdrawals at this time.
-     *
-     */
     fun withdraw(accountId: AccountId, amount: Amount): AtmDto.Transaction = transaction {
         val record = ledgerDao.getByAccountId(accountId)
         if (amount > record.balance)
@@ -147,12 +123,6 @@ class LedgerService @Inject constructor(
         }
     }
 
-    /**
-     * Adds value to the authorized account. The deposited amount does not need to be a multiple of 20.
-     *      deposit <value>
-     * Returns the account’s balance after deposit is made in the format:
-     *      Current balance: <balance>
-     */
     fun deposit(accountId: AccountId, amount: Amount): AtmDto.Transaction = transaction {
         val record = ledgerDao.getByAccountId(accountId)
         val updatedRecord = record.copy(balance = record.balance + amount)
