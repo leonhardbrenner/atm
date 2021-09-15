@@ -30,7 +30,7 @@ https://github.com/leonhardbrenner/atm/blob/main/src/jvmMain/kotlin/services/Atm
 
   https://github.com/leonhardbrenner/atm/blob/main/src/jvmTest/kotlin/services/AtmServiceTest.kt
 
-  The test are organized in the same order as the AtmService's classes and methods and use nomanclature `<Service> - <method> - <sub test>`
+  The test are organized in the same order as the AtmService's classes and methods and use nomanclature: `<Service> - <method> - <sub test>`
 
 # Running
   Note: you will need a postgres database in my case I use test/test@test.
