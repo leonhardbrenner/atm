@@ -1,17 +1,5 @@
 ## Atm implementation in Kolin
 
-This project was forked from an open source template projects I wrote this year.
-
-### Note: this is not fully implemented there are a list of follow up PRs key points they are fixing:
-
-  https://github.com/leonhardbrenner/atm/pull/4 :
-  
-  return and handle messages and exceptions to be dispayed. Probably just a toString on a data class.
-    
-  implement the withdraw logic in the LedgerService
-  
-  add machine so ledger service can know how much money is in the machine **this is important we can't finish withdraw without it.
-
 Anyway, feel free to leave comments on any of the follow up PRs as well as this one.
 
 # Implementation
@@ -44,6 +32,22 @@ https://github.com/leonhardbrenner/atm/blob/main/src/jvmMain/kotlin/services/Atm
   Note: You will get an error and need these environment variable.
   
     DB_URL=jdbc:postgresql://localhost/test;DB_USER=test;DB_PASSWORD=test
+
+### Note: this is not fully implemented there are a list of follow up PRs key points they are fixing:
+
+  https://github.com/leonhardbrenner/atm/pull/4 - now merged and these bullets are handled.
+  
+  add machine so ledger service can know how much money is in the machine I am assuming the ATM keeps the machine ledger centralized so it can know the balance in case of theft.
+
+  return and handle messages and exceptions to be dispayed. Probably just a toString on a data class.
+    
+  implement the withdraw logic in the LedgerService
+  
+  https://github.com/leonhardbrenner/atm/pull/5 - not created yet
+  
+  last pr handled the messaging by returning a receipts now I need to do this for deposit and such.
+  
+  last pr implemented the withraw logic and stubbed the test. I will fill in the tests here.
 
 
 # Solution starting from my template project:
