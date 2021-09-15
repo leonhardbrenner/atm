@@ -32,6 +32,14 @@ interface Atm {
     val balance: Double
   }
 
+  interface Machine {
+    val id: Int
+
+    val serialNumber: String
+
+    val balance: String
+  }
+
   interface Transaction {
     val id: Int
 

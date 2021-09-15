@@ -41,6 +41,17 @@ interface AtmBuilder {
     balance ?: throw IllegalArgumentException("balance is not nullable")
     )}
 
+  class Machine(
+    var id: Int?,
+    var serialNumber: String?,
+    var balance: String?
+  ) {
+    fun build(): Atm.Machine = AtmDto.Machine(
+    id ?: throw IllegalArgumentException("id is not nullable"),
+    serialNumber ?: throw IllegalArgumentException("serialNumber is not nullable"),
+    balance ?: throw IllegalArgumentException("balance is not nullable")
+    )}
+
   class Transaction(
     var id: Int?,
     var accountId: String?,

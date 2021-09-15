@@ -86,6 +86,27 @@ class AtmServiceTest {
     }
 
     @Test
+    fun `LedgerService - withdraw - templete delete after other subtests are done`() {
+        /**
+         * If account has not been overdrawn, returns balance after withdrawal in the format:
+         *      Amount dispensed: $<x>
+         *      Current balance: <balance>
+         */
+        val ledgerRecord = AtmDto.Ledger(123, accountId, 333.22)
+        val mockLedgerDao = mock<LedgerDao>() {
+            on { getByAccountId(any()) }.then {
+                ledgerRecord
+            }
+        }
+        val mockTransactionDao = mock<TransactionDao>()
+        val service = LedgerService(mockLedgerDao, mockTransactionDao)
+        val reciept = service.withdraw(accountId, 20.33)
+        verify(mockLedgerDao).getByAccountId(any())
+        verify(mockLedgerDao).update(any())
+        verify(mockTransactionDao).create(any())
+    }
+
+    @Test
     fun `LedgerService - withdraw - overdrawn with this transaction`() {
         /**
          * If the account has been overdrawn with this transaction, removes a further $5 from their account, and returns:

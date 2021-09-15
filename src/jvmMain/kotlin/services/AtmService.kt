@@ -17,8 +17,9 @@ typealias AccountId = String
 typealias Amount = Double
 typealias Pin = String
 typealias Token = String
+typealias SerialNumber = String
 
-class AuthorizationPinDao: AtmDao.AuthorizationPin { //TODO - Make this and base interfaces
+class AuthorizationPinDao: AtmDao.AuthorizationPin() { //TODO - The generated Daos could be mixins (class -> interface)
     fun getByAccountId(accountId: AccountId) = AtmDb.AuthorizationPin.Table.select {
         AtmDb.AuthorizationPin.Table.accountId.eq(accountId)
     }.map {
@@ -29,7 +30,7 @@ class AuthorizationPinDao: AtmDao.AuthorizationPin { //TODO - Make this and base
     }
 }
 
-class AuthorizationTokenDao: AtmDao.AuthorizationToken {
+class AuthorizationTokenDao: AtmDao.AuthorizationToken() {
     fun getByToken(token: Token) = AtmDb.AuthorizationToken.Table.select {
         AtmDb.AuthorizationToken.Table.token.eq(token)
     }.map {
@@ -43,7 +44,7 @@ class AuthorizationTokenDao: AtmDao.AuthorizationToken {
         AtmDb.AuthorizationToken.Table.token eq token }
 }
 
-class LedgerDao: AtmDao.Ledger {
+class LedgerDao: AtmDao.Ledger() {
     fun getByAccountId(accountId: AccountId) = AtmDb.Ledger.Table.select {
         AtmDb.Ledger.Table.accountId.eq(accountId)
     }.map {
@@ -54,11 +55,19 @@ class LedgerDao: AtmDao.Ledger {
     }
 }
 
-class TransactionDao: AtmDao.Transaction {
+class TransactionDao: AtmDao.Transaction() {
     fun getByAccountId(accountId: AccountId) = AtmDb.Transaction.Table.select {
         AtmDb.Transaction.Table.accountId.eq(accountId)
     }.map {
         AtmDb.Transaction.select(it)
+    }
+}
+
+class MachineDao: AtmDao.Machine() {
+    fun getSerialNumber(serialNumber: SerialNumber) = AtmDb.Machine.Table.select {
+        AtmDb.Machine.Table.serialNumber.eq(serialNumber)
+    }.map {
+        AtmDb.Machine.select(it)
     }
 }
 
@@ -106,21 +115,39 @@ class AuthorizationService @Inject constructor(
 }
 
 class LedgerService @Inject constructor(
+    val machineDao: MachineDao,
     val ledgerDao: LedgerDao,
     val transactionDao: TransactionDao
     ) {
 
     fun withdraw(accountId: AccountId, amount: Amount): AtmDto.Transaction = transaction {
-        val record = ledgerDao.getByAccountId(accountId)
-        data class Withdraw()
-       """
-       Amount dispensed: ${'$'}<x>
-       Current balance: <balance>
-       """.trimIndent()
-        if (amount > record.balance)
-            throw Exception("Funds are not available.")
+        val machineLedger = machineDao.getSerialNumber("machineId")
+        val customerLedger = ledgerDao.getByAccountId(accountId)
+
+        when  {
+            //XXX - we need a machineDao so we can handle the following
+            // Unable to dispense full amount requested at this time
+            // Unable to process your withdrawal at this time.
+            amount < 0 ->
+                """
+                Your account is overdrawn! You may not make withdrawals at this time.    
+                """.trimIndent()
+            amount < customerLedger.balance ->
+                """
+                Amount dispensed: ${'$'}<x>
+                Current balance: <balance>
+                """.trimIndent()
+            amount > customerLedger.balance -> {
+                //TODO - it would be more polite to warn the customer
+                """
+                Amount dispensed: ${'$'}<x>
+                You have been charged an overdraft fee of ${'$'}5. Current balance: <balance>    
+                """.trimIndent()
+            }
+        }
+
         //Todo - handle exceptions better. We can extend Exception and build message as a format in toString()
-        val updatedRecord = record.copy(balance = record.balance - amount)
+        val updatedRecord = customerLedger.copy(balance = customerLedger.balance - amount)
         ledgerDao.update(updatedRecord)
         val now = now()
         AtmDto.Transaction(-1, accountId, now, amount, updatedRecord.balance).apply {
@@ -183,6 +210,7 @@ class AtmService @Inject constructor(
 class AtmSession @Inject constructor(
     val atmService: AtmService
 ) {
+    var serialNumber: SerialNumber? = "123456789" //XXX - Needs to come from config. It hardcoded to match fixtures.
     var token: Token? = null
 
     object Module : AbstractModule() {
