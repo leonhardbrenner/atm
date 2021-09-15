@@ -112,6 +112,11 @@ class LedgerService @Inject constructor(
 
     fun withdraw(accountId: AccountId, amount: Amount): AtmDto.Transaction = transaction {
         val record = ledgerDao.getByAccountId(accountId)
+        data class Withdraw()
+       """
+       Amount dispensed: ${'$'}<x>
+       Current balance: <balance>
+       """.trimIndent()
         if (amount > record.balance)
             throw Exception("Funds are not available.")
         //Todo - handle exceptions better. We can extend Exception and build message as a format in toString()
