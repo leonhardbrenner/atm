@@ -10,7 +10,7 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 
 class AtmDao {
-  open class AuthorizationPin {
+  open interface AuthorizationPin {
     fun index() = AtmDb.AuthorizationPin.Table.selectAll().map {
        AtmDb.AuthorizationPin.select(it)
     }
@@ -28,7 +28,7 @@ class AtmDao {
     fun destroy(id: Int) = AtmDb.AuthorizationPin.Table.deleteWhere {
         AtmDb.AuthorizationPin.Table.id eq id }        }
 
-  open class AuthorizationToken {
+  open interface AuthorizationToken {
     fun index() = AtmDb.AuthorizationToken.Table.selectAll().map {
        AtmDb.AuthorizationToken.select(it)
     }
@@ -46,7 +46,7 @@ class AtmDao {
     fun destroy(id: Int) = AtmDb.AuthorizationToken.Table.deleteWhere {
         AtmDb.AuthorizationToken.Table.id eq id }        }
 
-  open class Ledger {
+  open interface Ledger {
     fun index() = AtmDb.Ledger.Table.selectAll().map {
        AtmDb.Ledger.select(it)
     }
@@ -62,7 +62,7 @@ class AtmDao {
     }
     fun destroy(id: Int) = AtmDb.Ledger.Table.deleteWhere { AtmDb.Ledger.Table.id eq id }        }
 
-  open class Machine {
+  open interface Machine {
     fun index() = AtmDb.Machine.Table.selectAll().map {
        AtmDb.Machine.select(it)
     }
@@ -78,7 +78,7 @@ class AtmDao {
     }
     fun destroy(id: Int) = AtmDb.Machine.Table.deleteWhere { AtmDb.Machine.Table.id eq id }        }
 
-  open class Transaction {
+  open interface Transaction {
     fun index() = AtmDb.Transaction.Table.selectAll().map {
        AtmDb.Transaction.select(it)
     }

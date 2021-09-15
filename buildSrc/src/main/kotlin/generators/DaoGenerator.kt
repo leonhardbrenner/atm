@@ -38,7 +38,7 @@ object DaoGenerator: Generator {
 
     fun TypeSpec.Builder.generateType(type: Manifest.Namespace.Type): TypeSpec.Builder
     = addType(
-        TypeSpec.classBuilder(type.name).apply {
+        TypeSpec.interfaceBuilder(type.name).apply {
             addModifiers(KModifier.OPEN)
             addFunction(type.index)
             addFunction(type.get)
