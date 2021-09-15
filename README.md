@@ -15,6 +15,8 @@ https://github.com/leonhardbrenner/atm/blob/main/src/jvmMain/kotlin/services/Atm
   LedgerService is where withdraw and deposit calculate margins and make an entry in the ledger and transaction tables within a transaction. **
   
   AuthenticationService - coordinates authorizationPin and authorizationToken daos
+  
+  For an explanation of how the boilerplate is created see section 'Solution starting from my template project'
 
 # Tests:
 
@@ -71,6 +73,11 @@ This generates the following code for me:
   https://github.com/leonhardbrenner/atm/blob/main/src/jvmMain/kotlin/generated/dao/AtmDao.kt
 
 These classes represent the interfaces, dto, db code specific to my types, and daos with basic crud that are open to extending. I have generators that build the routes and client api for react Kotlin in the StoneSoup project as well.
+
+Finally, I can write my services. In this case I have extended some of my Daos:
+
+  https://github.com/leonhardbrenner/atm/blob/main/src/jvmTest/kotlin/services/AtmServiceTest.kt
+  https://github.com/leonhardbrenner/atm/blob/main/src/jvmMain/kotlin/services/AtmService.kt
 
 # History
   
