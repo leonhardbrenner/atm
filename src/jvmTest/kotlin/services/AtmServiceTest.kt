@@ -78,7 +78,8 @@ class AtmServiceTest {
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val service = LedgerService(mockLedgerDao, mockTransactionDao)
+        val mockMachineDao = mock<MachineDao>()
+        val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
         service.withdraw(accountId, 20.33)
         verify(mockLedgerDao).getByAccountId(any())
         verify(mockLedgerDao).update(any())
@@ -99,7 +100,8 @@ class AtmServiceTest {
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val service = LedgerService(mockLedgerDao, mockTransactionDao)
+        val mockMachineDao = mock<MachineDao>()
+        val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
         val reciept = service.withdraw(accountId, 20.33)
         verify(mockLedgerDao).getByAccountId(any())
         verify(mockLedgerDao).update(any())
@@ -121,7 +123,8 @@ class AtmServiceTest {
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val service = LedgerService(mockLedgerDao, mockTransactionDao)
+        val mockMachineDao = mock<MachineDao>()
+        val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
         service.withdraw(accountId, 20.33)
         verify(mockLedgerDao).getByAccountId(any())
         verify(mockLedgerDao).update(any())
@@ -142,7 +145,8 @@ class AtmServiceTest {
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val service = LedgerService(mockLedgerDao, mockTransactionDao)
+        val mockMachineDao = mock<MachineDao>()
+        val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
         service.withdraw(accountId, 20.33)
         verify(mockLedgerDao).getByAccountId(any())
         verify(mockLedgerDao).update(any())
@@ -162,7 +166,8 @@ class AtmServiceTest {
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val service = LedgerService(mockLedgerDao, mockTransactionDao)
+        val mockMachineDao = mock<MachineDao>()
+        val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
         service.withdraw(accountId, 20.33)
         verify(mockLedgerDao).getByAccountId(any())
         verify(mockLedgerDao).update(any())
@@ -184,7 +189,8 @@ class AtmServiceTest {
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val service = LedgerService(mockLedgerDao, mockTransactionDao)
+        val mockMachineDao = mock<MachineDao>()
+        val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
         service.withdraw(accountId, 20.33)
         verify(mockLedgerDao).getByAccountId(any())
         verify(mockLedgerDao).update(any())
@@ -206,7 +212,8 @@ class AtmServiceTest {
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val service = LedgerService(mockLedgerDao, mockTransactionDao)
+        val mockMachineDao = mock<MachineDao>()
+        val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
         service.deposit(accountId, 20.33)
         verify(mockLedgerDao).getByAccountId(any())
         verify(mockLedgerDao).update(any())
@@ -221,7 +228,8 @@ class AtmServiceTest {
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val service = LedgerService(mockLedgerDao, mockTransactionDao)
+        val mockMachineDao = mock<MachineDao>()
+        val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
         val result = service.balance(accountId)
         verify(mockLedgerDao).getByAccountId(any())
         assertEquals(ledgerRecord.balance, result)
