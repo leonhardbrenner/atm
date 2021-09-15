@@ -1,3 +1,11 @@
+# Note: this is not fully implemented there are a list of follow up PRs below. Key points that are missing are:
+
+  https://github.com/leonhardbrenner/atm/pull/4
+  I need to return and handle messages and exceptions to be dispayed. Probably just a toString on a data class.
+  I need to implement the withdraw logic in the LedgerService
+
+Anyway, feel free to leave comments on any of the follow up PRs as well as this one.
+
 ## Atm implementation in Kolin
 
 This project was forked from an open source template projects I wrote this year.
@@ -27,9 +35,6 @@ https://github.com/leonhardbrenner/atm/blob/main/src/jvmMain/kotlin/services/Atm
 https://github.com/leonhardbrenner/atm/blob/main/src/jvmTest/kotlin/services/AtmServiceTest.kt
 
   The test are organized in the same order as the AtmService's classes and methods and use nomanclature <Service> - <method> - <sub test>
-
-# PRs since initial release:  
-  https://github.com/leonhardbrenner/atm/pull/4
   
 # Solution starting from my template project:
 
