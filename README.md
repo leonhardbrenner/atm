@@ -10,13 +10,7 @@ This project was forked from an open source template projects I wrote this year.
     
   implement the withdraw logic in the LedgerService
   
-  https://github.com/leonhardbrenner/atm/pull/5 : *not yet started but I code generate most of this so should not be more than an hour.
-
   add machine so ledger service can know how much money is in the machine **this is important we can't finish withdraw without it.
-
-  https://github.com/leonhardbrenner/atm/pull/6 :
-
-  when PR 6 is done I can finish the withdraw logic
 
 Anyway, feel free to leave comments on any of the follow up PRs as well as this one.
 
@@ -99,3 +93,6 @@ Finally, this repo is forked from grow.
   in this commit:
   https://github.com/leonhardbrenner/atm/pull/3/commits/53e270a0b57c78e680d7b379a38b3ae43d269ab9
   It turns out that flag let's you use mockito to mock closed classes:(
+  
+  Solution found here:
+  https://antonioleiva.com/mockito-2-kotlin
