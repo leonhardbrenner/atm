@@ -30,7 +30,7 @@ https://github.com/leonhardbrenner/atm/blob/main/src/jvmMain/kotlin/services/Atm
 
   https://github.com/leonhardbrenner/atm/blob/main/src/jvmTest/kotlin/services/AtmServiceTest.kt
 
-    The test are organized in the same order as the AtmService's classes and methods and use nomanclature <Service> - <method> - <sub test>
+  The test are organized in the same order as the AtmService's classes and methods and use nomanclature <Service> - <method> - <sub test>
 
 # Running
   Note: you will need a postgres database in my case I use test/test@test.
@@ -84,8 +84,10 @@ Finally, this repo is forked from grow.
 **There are several bugs in LedgerService.withdraw atm I will fix those but wanted to send my general design out.
 
  # Sticky points:
+ 
   To test the services I had to integrate mockito-kotlin which was failing till I found this:
   https://github.com/leonhardbrenner/atm/pull/3/commits/53e270a0b57c78e680d7b379a38b3ae43d269ab9#diff-9f49e963254a066f3fed7ea9bea122e4999e1af6079b129f1741093295ed1430
+  
   in this commit:
   https://github.com/leonhardbrenner/atm/pull/3/commits/53e270a0b57c78e680d7b379a38b3ae43d269ab9
   It turns out that flag let's you use mockito to mock closed classes:(
