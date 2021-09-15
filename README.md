@@ -2,9 +2,13 @@
 
   https://github.com/leonhardbrenner/atm/pull/4 :
   
-    return and handle messages and exceptions to be dispayed. Probably just a toString on a data class.
+  return and handle messages and exceptions to be dispayed. Probably just a toString on a data class.
     
-    implement the withdraw logic in the LedgerService
+  implement the withdraw logic in the LedgerService
+  
+  https://github.com/leonhardbrenner/atm/pull/5 : *not yet started but I code generate most of this so should not be more than an hour.
+
+  i need to add machine so I can know how much money is in the machine **this is important we can't finish withdraw without it.
 
 Anyway, feel free to leave comments on any of the follow up PRs as well as this one.
 
