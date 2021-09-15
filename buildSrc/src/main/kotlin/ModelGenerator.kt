@@ -21,17 +21,6 @@ open class ModelGenerator : DefaultTask() {
 
     @TaskAction
     fun generate() {
-        val seeds = Namespace(Seeds::class)
-        listOf(seeds).forEach { namespace ->
-            println("Generating ${namespace.name}")
-            InterfaceGenerator.generate(namespace)
-            DtoGenerator.generate(namespace)
-            BuilderGenerator.generate(namespace)
-            DbGenerator.generate(namespace)
-            DaoGenerator.generate(namespace)
-            RouteGenerator.generate(namespace)
-        }
-
         val atm = Namespace(Atm::class)
         listOf(atm).forEach { namespace ->
             println("Generating ${namespace.name}")

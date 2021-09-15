@@ -2,10 +2,12 @@ package jsonLoaders
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import dbManagers.resourceText
 import generated.model.AtmDto
-import generated.model.SeedsDto
+import java.io.File
 import javax.inject.Inject
+
+fun resource(path: String) = File(ClassLoader.getSystemResource(path).file)
+fun resourceText(path: String) = resource(path).readText()
 
 class AtmJsonLoaders @Inject constructor(val kMapper: ObjectMapper) {
 
