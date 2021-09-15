@@ -1,8 +1,10 @@
-### Note: this is not fully implemented there are a list of follow up PRs below. Key points that are missing are:
+### Note: this is not fully implemented there are a list of follow up PRs key points they are fixing:
 
-  https://github.com/leonhardbrenner/atm/pull/4
-  I need to return and handle messages and exceptions to be dispayed. Probably just a toString on a data class.
-  I need to implement the withdraw logic in the LedgerService
+  https://github.com/leonhardbrenner/atm/pull/4 :
+  
+    return and handle messages and exceptions to be dispayed. Probably just a toString on a data class.
+    
+    implement the withdraw logic in the LedgerService
 
 Anyway, feel free to leave comments on any of the follow up PRs as well as this one.
 
@@ -24,18 +26,24 @@ https://github.com/leonhardbrenner/atm/blob/main/src/jvmMain/kotlin/services/Atm
   
   AuthenticationService - coordinates authorizationPin and authorizationToken daos
 
-# Running
-  Note: not positive this is write I run from IntelliJ
-  ./gradlew run services.AtmServiceKt
-  Note: You will need these environment variable. I am using a postgres and have config.
-    DB_URL=jdbc:postgresql://localhost/test;DB_USER=test;DB_PASSWORD=test
-
 # Tests:
 
-https://github.com/leonhardbrenner/atm/blob/main/src/jvmTest/kotlin/services/AtmServiceTest.kt
+  https://github.com/leonhardbrenner/atm/blob/main/src/jvmTest/kotlin/services/AtmServiceTest.kt
 
-  The test are organized in the same order as the AtmService's classes and methods and use nomanclature <Service> - <method> - <sub test>
+    The test are organized in the same order as the AtmService's classes and methods and use nomanclature <Service> - <method> - <sub test>
+
+# Running
+  Note: you will need a postgres database in my case I use test/test@test.
+  Note: not positive this is correct I run from IntelliJ there is a little green arrow next to main at the bottom of AtmServiceKt.
+  Note: I am not reading from stdin I just feed it from a list of strings for now.
   
+    ./gradlew run services.AtmServiceKt
+  
+  Note: You will get an error and need these environment variable.
+  
+    DB_URL=jdbc:postgresql://localhost/test;DB_USER=test;DB_PASSWORD=test
+
+
 # Solution starting from my template project:
 
 As I mentioned I used a template project to write this. This is a summary of those steps.
