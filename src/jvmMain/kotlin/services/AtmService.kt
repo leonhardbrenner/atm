@@ -64,7 +64,7 @@ class TransactionDao: AtmDao.Transaction {
 }
 
 class MachineDao: AtmDao.Machine {
-    fun getSerialNumber(serialNumber: SerialNumber) = AtmDb.Machine.Table.select {
+    fun getBySerialNumber(serialNumber: SerialNumber) = AtmDb.Machine.Table.select {
         AtmDb.Machine.Table.serialNumber.eq(serialNumber)
     }.map {
         AtmDb.Machine.select(it)
@@ -136,6 +136,8 @@ data class Reciept(val amount: Double? = null, val accountError: String = "", va
         }
 }
 
+const val SERIAL_NUMBER_HACK = "123456789" //XXX - this will only work for one machine
+
 class LedgerService @Inject constructor(
     val machineDao: MachineDao,
     val ledgerDao: LedgerDao,
@@ -144,7 +146,7 @@ class LedgerService @Inject constructor(
 
     fun withdraw(accountId: AccountId, amount: Amount): Reciept = transaction {
         //XXX - Needs to come from config. It hardcoded to match fixtures
-        val machineLedger = machineDao.getSerialNumber("123456789")
+        val machineLedger = machineDao.getBySerialNumber(SERIAL_NUMBER_HACK)
         val customerLedger = ledgerDao.getByAccountId(accountId)
 
         var fees = 0
