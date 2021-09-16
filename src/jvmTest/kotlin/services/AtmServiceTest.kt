@@ -16,6 +16,7 @@ class AtmServiceTest {
     val token = "XYZ"
     val ledgerRecord = AtmDto.Ledger(123, accountId, 333.22)
     val amount = 99.99
+    val serialNumber = SERIAL_NUMBER_HACK
 
     @Test
     fun `AuthorizationService - verifyPin - smoketest`() {
@@ -78,7 +79,12 @@ class AtmServiceTest {
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val mockMachineDao = mock<MachineDao>()
+        val machineRecord = AtmDto.Machine(123, serialNumber, 6000.00)
+        val mockMachineDao = mock<MachineDao> {
+            on { this.getBySerialNumber(machineRecord.serialNumber) }.then {
+                machineRecord
+            }
+        }
         val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
         service.withdraw(accountId, 20.33)
         verify(mockLedgerDao).getByAccountId(any())
@@ -100,7 +106,12 @@ class AtmServiceTest {
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val mockMachineDao = mock<MachineDao>()
+        val machineRecord = AtmDto.Machine(123, serialNumber, 6660.00)
+        val mockMachineDao = mock<MachineDao> {
+            on { this.getBySerialNumber(machineRecord.serialNumber) }.then {
+                machineRecord
+            }
+        }
         val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
         val reciept = service.withdraw(accountId, 20.33)
         verify(mockLedgerDao).getByAccountId(any())
@@ -123,7 +134,12 @@ class AtmServiceTest {
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val mockMachineDao = mock<MachineDao>()
+        val machineRecord = AtmDto.Machine(123, serialNumber, 6660.0)
+        val mockMachineDao = mock<MachineDao> {
+            on { this.getBySerialNumber(machineRecord.serialNumber) }.then {
+                machineRecord
+            }
+        }
         val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
         service.withdraw(accountId, 20.33)
         verify(mockLedgerDao).getByAccountId(any())
@@ -145,7 +161,12 @@ class AtmServiceTest {
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val mockMachineDao = mock<MachineDao>()
+        val machineRecord = AtmDto.Machine(123, serialNumber, 6660.0)
+        val mockMachineDao = mock<MachineDao> {
+            on { this.getBySerialNumber(machineRecord.serialNumber) }.then {
+                machineRecord
+            }
+        }
         val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
         service.withdraw(accountId, 20.33)
         verify(mockLedgerDao).getByAccountId(any())
@@ -166,7 +187,12 @@ class AtmServiceTest {
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val mockMachineDao = mock<MachineDao>()
+        val machineRecord = AtmDto.Machine(123, serialNumber, 6660.0)
+        val mockMachineDao = mock<MachineDao> {
+            on { this.getBySerialNumber(machineRecord.serialNumber) }.then {
+                machineRecord
+            }
+        }
         val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
         service.withdraw(accountId, 20.33)
         verify(mockLedgerDao).getByAccountId(any())
@@ -189,7 +215,12 @@ class AtmServiceTest {
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val mockMachineDao = mock<MachineDao>()
+        val machineRecord = AtmDto.Machine(123, serialNumber, 6660.0)
+        val mockMachineDao = mock<MachineDao> {
+            on { this.getBySerialNumber(machineRecord.serialNumber) }.then {
+                machineRecord
+            }
+        }
         val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
         service.withdraw(accountId, 20.33)
         verify(mockLedgerDao).getByAccountId(any())
