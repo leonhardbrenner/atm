@@ -43,12 +43,19 @@ https://github.com/leonhardbrenner/atm/blob/main/src/jvmMain/kotlin/services/Atm
     
   implement the withdraw logic in the LedgerService
   
-  https://github.com/leonhardbrenner/atm/pull/5 - not created yet
-  
-  last pr handled the messaging by returning a receipts now I need to do this for deposit and such.
-  
+  https://github.com/leonhardbrenner/atm/pull/5 - now merged and this bullets are handleds.
+    
   last pr implemented the withraw logic and stubbed the test. I will fill in the tests here.
 
+  https://github.com/leonhardbrenner/atm/pull/6 - not started
+
+last pr handled the messaging by returning a receipts now I need to do this for deposit and such.
+
+rename atmSession -> atmMachine and give it a display and cash dispenser then have it dispense also I think I forgot to decrement the machine ledger.
+
+I don't think I am displaying transactions correctly for history and it should probably be part of reciept. We should have an interface for Reciept with only amount and display() as members.
+
+authorization messages should have a place in our machine display.
 
 # Solution starting from my template project:
 
