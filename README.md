@@ -1,7 +1,5 @@
 ## Atm implementation in Kolin
 
-Anyway, feel free to leave comments on any of the follow up PRs as well as this one.
-
 # Implementation
 
 https://github.com/leonhardbrenner/atm/blob/main/src/jvmMain/kotlin/services/AtmService.kt from the bottom up:
