@@ -124,7 +124,7 @@ kotlin {
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-react-dom:$reactWrappersVersion")
                 implementation("org.jetbrains.kotlin-wrappers:kotlin-styled:5.3.0-pre.214-kotlin-1.5.20")
 
-                implementation(npm("react-hot-loader", "^4.12.20"))
+                //implementation(npm("react-hot-loader", "^4.12.20"))
 
 
                 /**
@@ -132,7 +132,7 @@ kotlin {
                  *     https://github.com/cfnz/muirwik
                  *     https://github.com/cfnz/muirwik-starterapp
                  */
-                implementation("com.ccfraser.muirwik:muirwik-components:0.8.2")
+                //implementation("com.ccfraser.muirwik:muirwik-components:0.8.2")
                 //implementation(npm("react-player", "~2.6.0"))
             }
         }
