@@ -21,7 +21,11 @@ class App : RComponent<RProps, AppState>() {
     }
 
     override fun RBuilder.render() {
-        + "hello"
+        inputComponent {
+            onSubmit = {
+
+            }
+        }
     }
 }
 

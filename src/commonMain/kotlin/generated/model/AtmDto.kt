@@ -64,13 +64,12 @@ interface AtmDto {
     override val id: Int,
     override val accountId: String,
     override val timestamp: Long,
-    override val amount: Double,
-    override val balance: Double
+    override val amount: Double
   ) : Atm.Transaction {
     companion object {
       const val path: String = "/Atm/Transaction"
 
       fun create(source: Atm.Transaction) = AtmDto.Transaction(source.id, source.accountId,
-          source.timestamp, source.amount, source.balance)}
+          source.timestamp, source.amount)}
   }
 }
