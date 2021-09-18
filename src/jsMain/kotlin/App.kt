@@ -1,12 +1,13 @@
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import react.*
+import react.dom.div
 
 private val scope = MainScope()
 
+const val initialDisplay = "What would you like to do?"
 external interface AppState : RState {
-    var selected: Int?
-    var over: Int?
+    var display: String?
 }
 
 class App : RComponent<RProps, AppState>() {
@@ -14,16 +15,23 @@ class App : RComponent<RProps, AppState>() {
     override fun AppState.init() {
         scope.launch {
             setState {
-                selected = null
-                over = null
+                display = initialDisplay
             }
         }
     }
 
+    fun handleInput(text: String) {
+        setState {
+            display = text
+        }
+    }
     override fun RBuilder.render() {
-        inputComponent {
-            onSubmit = {
-
+        div {
+            + (state.display?:"")
+            inputComponent {
+                onSubmit = {
+                    handleInput(it)
+                }
             }
         }
     }

@@ -4,20 +4,14 @@ import com.authzee.kotlinguice4.getInstance
 import com.google.inject.AbstractModule
 import com.google.inject.Guice
 import generated.dao.AtmDao
-import generated.model.Atm
 import generated.model.AtmDto
 import generated.model.db.AtmDb
+import model.*
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 import javax.inject.Inject
-
-typealias AccountId = String
-typealias Amount = Double
-typealias Pin = String
-typealias Token = String
-typealias SerialNumber = String
 
 class AuthorizationPinDao: AtmDao.AuthorizationPin {
     fun getByAccountId(accountId: AccountId) = AtmDb.AuthorizationPin.Table.select {
@@ -98,7 +92,7 @@ class AuthorizationService @Inject constructor(
     /**
      * This should lookup the account hashed_pin and compare against hash(pin) and return a token
      */
-    fun verifyToken(token: Token): AccountId = transaction { //Todo - do this with token
+    fun verifyToken(accountId: AccountId, token: Token): AccountId = transaction { //Todo - do this with token
         authorizationTokenDao.getByToken(token)?.let { result ->
             val now = now()
             if (now > result.expiration)
@@ -115,33 +109,6 @@ class AuthorizationService @Inject constructor(
     fun endSession(token: Token) = transaction { //Todo - do this with token
         authorizationTokenDao.destroyByToken(token)
     }
-}
-
-data class Reciept(
-    val amount: Double? = null,
-    val balance: Double? = null,
-    val history: List<AtmDto.Transaction>? = null,
-    val accountError: String = "",
-    val machineError: String = ""
-) {
-    override fun toString() =
-        if (history != null)
-            history.joinToString("\n")
-        else if (amount == null) {
-            """
-            $accountError
-            $machineError    
-            """.trimIndent()
-
-        } else {
-            """
-            Amount dispensed: $amount
-            Current balance: <balance>
-            
-            $accountError
-            $machineError
-            """.trimIndent().trimEnd()
-        }
 }
 
 const val SERIAL_NUMBER_HACK = "123456789" //XXX - this will only work for one machine
@@ -224,29 +191,30 @@ class AtmService @Inject constructor(
     fun login(accountId: AccountId, pin: Pin) =
         authorizationService.verifyPin(accountId, pin)
 
-    fun balance(token: Token): Reciept {
-        val accountId = authorizationService.verifyToken(token) //Todo - move this to AtmSession
+    fun balance(accountId: AccountId, token: Token): Reciept {
+        authorizationService.verifyToken(accountId, token) //Todo - move this to AtmSession
         return ledgerService.balance(accountId)
     }
 
-    fun withdraw(token: Token, amount: Amount): Reciept {
-        val accountId = authorizationService.verifyToken(token)
-        return ledgerService.withdraw(accountId, amount)
-    }
+    fun withdraw(accountId: AccountId, token: Token, amount: Amount) =
+        authorizationService.verifyToken(accountId, token)?.let { accountId ->
+            ledgerService.withdraw(accountId, amount)
+        }
 
-    fun deposit(token: Token, amount: Amount): Reciept {
-        val accountId = authorizationService.verifyToken(token)
-        return ledgerService.deposit(accountId, amount)
-    }
+    fun deposit(accountId: AccountId, token: Token, amount: Amount) =
+        authorizationService.verifyToken(accountId, token)?.let { accountId ->
+            ledgerService.deposit(accountId, amount)
+        }
 
-    fun history(token: Token) = transaction {
-        val accountId = authorizationService.verifyToken(token)
-        Reciept(
-            history = transactionDao.getByAccountId(accountId)
-        )
-    }
+    fun history(accountId: AccountId, token: Token) =
+        authorizationService.verifyToken(accountId, token).let { accountId ->
+            //Todo - make a transaction service and move this there.
+            Reciept(
+                history = transactionDao.getByAccountId(accountId)
+            )
+        }
 
-    fun logout(token: Token) = transaction {
+    fun logout(accountId: AccountId, token: Token) = transaction {
         authorizationService.endSession(token)
     }
 
@@ -255,6 +223,7 @@ class AtmService @Inject constructor(
 class AtmSession @Inject constructor(
     val atmService: AtmService
 ) {
+    var accountId: AccountId? = null
     var token: Token? = null
 
     object Module : AbstractModule() {
@@ -263,29 +232,30 @@ class AtmSession @Inject constructor(
         }
     }
 
-    fun login(accountId: AccountId, pin: Pin) = atmService.login(accountId, pin).apply {
+    fun login(attrAccountId: AccountId, pin: Pin) = atmService.login(attrAccountId, pin).apply {
+        accountId = attrAccountId
         token = this
     }
-    fun logout() = token?.let { atmService.logout(it) }
+    fun logout() = token?.let { atmService.logout(accountId!!, it) }
     fun handleMessage(message: String): Reciept = message.split(' ').let { message ->
         val command = message.first()
         when (command) {
             "balance" -> {
-                atmService.balance(token!!)
+                atmService.balance(accountId!!, token!!)
             }
             //transaction.post()
             "withdraw" -> {
                 val amount = message[1]!!.toDouble()
-                atmService.withdraw(token!!, amount)
+                atmService.withdraw(accountId!!, token!!, amount)
             }
             //transaction.post()
             "deposit" -> {
                 val amount = message[1]!!.toDouble()
-                atmService.deposit(token!!, amount)
+                atmService.deposit(accountId!!, token!!, amount)
             }
             //transaction.get() = index()
             "history" -> {
-                atmService.history(token!!)
+                atmService.history(accountId!!, token!!)
             }
             else -> throw Exception("Unknown command [$message]")
         }

@@ -1,28 +1,72 @@
 package generated.routers
 
-import generated.model.AtmDto
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
-import io.ktor.routing.Routing
-import io.ktor.routing.post
-import io.ktor.routing.route
+import io.ktor.routing.*
+import services.AtmService
 import javax.inject.Inject
-import services.AtmSession
+import kotlin.text.get
 
 class AtmRouter @Inject constructor(
-    val atmSession: AtmSession
+    val atmService: AtmService
 ) {
-    fun routes(routing: Routing) = routing.route(AtmDto.Transaction.path) {
+    fun routes(routing: Routing) = routing.route("/accounts/{accountId}") {
 
+        //login
+        get {
+            val accountId = call.parameters["accountId"]!!
+            val pin = call.parameters["pin"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+            call.respond( atmService.login(accountId, pin) )
+        }
+
+        //withdraw
         post {
-            val response = try {
-                val request = call.parameters["request"]!!
-                atmSession.handleMessage(request)
-            } catch (ex: Exception) {
-                return@post call.respond(HttpStatusCode.BadRequest)
-            }
-            call.respond(response)
+            call.respond(
+                try {
+                    val accountId = call.parameters["accountId"]!!
+                    val token = call.parameters["token"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+                    val amount = call.parameters["amount"]?.toDouble() ?: return@post call.respond(HttpStatusCode.BadRequest)
+                    atmService.withdraw(accountId, token, amount)
+                } catch (ex: Exception) {
+                    return@post call.respond(HttpStatusCode.BadRequest)
+                }
+            )
+        }
+
+        //deposit
+        post {
+            call.respond(
+                try {
+                    val accountId = call.parameters["accountId"]!!
+                    val token = call.parameters["token"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+                    val amount = call.parameters["amount"]?.toDouble() ?: return@post call.respond(HttpStatusCode.BadRequest)
+                    atmService.deposit(accountId, token, amount)
+                } catch (ex: Exception) {
+                    return@post call.respond(HttpStatusCode.BadRequest)
+                }
+            )
+        }
+
+        //balance
+        get {
+            val accountId = call.parameters["accountId"]!!
+            val token = call.parameters["token"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+            call.respond( atmService.balance(accountId, token) )
+        }
+
+        //history
+        get {
+            val accountId = call.parameters["accountId"]!!
+            val token = call.parameters["token"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+            call.respond( atmService.history(accountId, token) )
+        }
+
+        //logout
+        get {
+            val accountId = call.parameters["accountId"]!!
+            val token = call.parameters["token"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+            call.respond( atmService.logout(accountId, token) )
         }
 
     }

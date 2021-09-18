@@ -3,9 +3,10 @@ import io.ktor.client.*
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
 import io.ktor.client.request.*
-import io.ktor.http.*
 
 import kotlinx.browser.window
+import model.*
+
 
 val endpoint = window.location.origin // only needed until https://github.com/ktorio/ktor/issues/1695 is resolved
 
@@ -13,49 +14,40 @@ val jsonClient = HttpClient {
     install(JsonFeature) { serializer = KotlinxSerializer() }
 }
 
-class Api {
+object Api {
 
-    //Todo - Post transaction with reciept ** I think this is one endpoint
-    //suspend fun create(accountId: Int, name: String) {
-    //    jsonClient.post<Unit>(endpoint + AtmDto.Transaction.path) {
-    //        contentType(ContentType.Application.Json)
-    //        body = AtmDto.Transaction(-1, "Y")
-    //
-    //        parameter("parentId", parentId)
-    //        parameter("name", name)
-    //    }
-    //}
+    suspend fun login(accountId: AccountId, pin: Pin) =
+        jsonClient.get<Token>(endpoint + "/accounts/$accountId/login") {
+            parameter("pin", pin)
+        }
 
-    /*
-    suspend fun index(): List<AtmDto.Transaction> {
-        return jsonClient.get(endpoint + AtmDto.Transaction.path)
-    }
-
-    suspend fun new() { TODO("Form data defaults. Use a template class.") }
-
-    suspend fun create(parentId: Int, name: String) {
-        jsonClient.post<Unit>(endpoint + TransactionDto.Chore.path) {
-            parameter("parentId", parentId)
-            parameter("name", name)
+    suspend fun withdraw(accountId: AccountId, token: Token, amount: Amount) {
+        jsonClient.post<Reciept>(endpoint + "/accounts/$accountId/withdraw") {
+            parameter("token", token)
+            parameter("amount", amount)
         }
     }
 
-    suspend fun edit() { TODO("Form data defaults. Use a template class.") }
-
-    //Todo - implement edit which has loads existing values
-
-    suspend fun move(id: Int, parentId: Int) {
-        jsonClient.put<Unit>(endpoint + TransactionDto.Chore.path + "/$id/move") {
-            //Example of how to send a complexType
-            //data class Node(val id: Int, val name: String)
-            //contentType(ContentType.Application.Json)
-            //body = Node(1, "Y")
-            parameter("parentId", parentId)
+    suspend fun deposit(accountId: AccountId, token: Token, amount: Amount) {
+        jsonClient.post<Reciept>(endpoint + "/accounts/$accountId/deposit") {
+            parameter("token", token)
+            parameter("amount", amount)
         }
     }
 
-    suspend fun destroy(choreId: Int) {
-        jsonClient.delete<Unit>(endpoint + SeedsDto.Chore.path + "/${choreId}")
-    }
-    */
+    suspend fun balance(accountId: AccountId, token: Token) =
+        jsonClient.get<Amount>(endpoint + "/account/$accountId/balance") {
+            parameter("token", token)
+        }
+
+    suspend fun history(accountId: AccountId, token: Token) =
+        jsonClient.get<List<AtmDto.Transaction>>(endpoint + "/accounts/$accountId/balance") {
+            parameter("token", token)
+        }
+
+    suspend fun logout(accountId: AccountId, token: Token) =
+        jsonClient.put<Unit>(endpoint + "/accounts/$accountId/logout") {
+            parameter("token", token)
+        }
+
 }
