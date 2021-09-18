@@ -25,8 +25,7 @@ interface Atm {
         val id: Int,
         val accountId: String,
         val timestamp: Long,
-        val amount: Double,
-        val balance: Double
+        val amount: Double
     )
 
     class Machine(
