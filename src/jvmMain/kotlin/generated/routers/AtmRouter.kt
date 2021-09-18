@@ -1,4 +1,4 @@
-package generated.routing
+package generated.routers
 
 import generated.model.AtmDto
 import io.ktor.application.call
@@ -10,7 +10,7 @@ import io.ktor.routing.route
 import javax.inject.Inject
 import services.AtmSession
 
-class AtmRouting@Inject constructor(
+class AtmRouter @Inject constructor(
     val atmSession: AtmSession
 ) {
     fun routes(routing: Routing) = routing.route(AtmDto.Transaction.path) {
