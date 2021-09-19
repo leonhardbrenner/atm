@@ -15,38 +15,36 @@ val jsonClient = HttpClient {
 }
 
 object Api {
-
+    //login 1434597300 4557
     suspend fun login(accountId: AccountId, pin: Pin) =
-        jsonClient.get<Token>(endpoint + "/accounts/$accountId/login") {
+        jsonClient.get<Reciept>(endpoint + "/accounts/$accountId/login") {
             parameter("pin", pin)
         }
 
-    suspend fun withdraw(accountId: AccountId, token: Token, amount: Amount) {
+    suspend fun withdraw(accountId: AccountId, token: Token, amount: Amount) =
         jsonClient.post<Reciept>(endpoint + "/accounts/$accountId/withdraw") {
             parameter("token", token)
             parameter("amount", amount)
         }
-    }
 
-    suspend fun deposit(accountId: AccountId, token: Token, amount: Amount) {
+    suspend fun deposit(accountId: AccountId, token: Token, amount: Amount) =
         jsonClient.post<Reciept>(endpoint + "/accounts/$accountId/deposit") {
             parameter("token", token)
             parameter("amount", amount)
         }
-    }
 
     suspend fun balance(accountId: AccountId, token: Token) =
-        jsonClient.get<Amount>(endpoint + "/account/$accountId/balance") {
+        jsonClient.get<Reciept>(endpoint + "/account/$accountId/balance") {
             parameter("token", token)
         }
 
     suspend fun history(accountId: AccountId, token: Token) =
-        jsonClient.get<List<AtmDto.Transaction>>(endpoint + "/accounts/$accountId/balance") {
+        jsonClient.get<Reciept>(endpoint + "/accounts/$accountId/history") {
             parameter("token", token)
         }
 
     suspend fun logout(accountId: AccountId, token: Token) =
-        jsonClient.put<Unit>(endpoint + "/accounts/$accountId/logout") {
+        jsonClient.put<Reciept>(endpoint + "/accounts/$accountId/logout") {
             parameter("token", token)
         }
 

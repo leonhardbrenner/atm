@@ -189,7 +189,13 @@ class AtmService @Inject constructor(
 ) {
 
     fun login(accountId: AccountId, pin: Pin) =
-        authorizationService.verifyPin(accountId, pin)
+        Reciept().let {
+            try {
+                it.copy(token = authorizationService.verifyPin(accountId, pin))
+            } catch (ex: Exception) {
+                it.copy(accountError = ex.message!!)
+            }
+        }
 
     fun balance(accountId: AccountId, token: Token): Reciept {
         authorizationService.verifyToken(accountId, token) //Todo - move this to AtmSession
@@ -232,9 +238,9 @@ class AtmSession @Inject constructor(
         }
     }
 
-    fun login(attrAccountId: AccountId, pin: Pin) = atmService.login(attrAccountId, pin).apply {
+    fun login(attrAccountId: AccountId, pin: Pin) = atmService.login(attrAccountId, pin).let { reciept ->
         accountId = attrAccountId
-        token = this
+        token = reciept.token
     }
     fun logout() = token?.let { atmService.logout(accountId!!, it) }
     fun handleMessage(message: String): Reciept = message.split(' ').let { message ->
