@@ -10,7 +10,7 @@ typealias Token = String
 typealias SerialNumber = String
 
 @Serializable
-data class Reciept(
+data class Response(
     val amount: Amount? = null,
     val balance: Amount? = null,
     val token: Token? = null,

@@ -1,4 +1,3 @@
-import generated.model.AtmDto
 import io.ktor.client.*
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
@@ -17,34 +16,34 @@ val jsonClient = HttpClient {
 object Api {
     //login 1434597300 4557
     suspend fun login(accountId: AccountId, pin: Pin) =
-        jsonClient.get<Reciept>("$basePath/$accountId/login") {
+        jsonClient.get<Response>("$basePath/$accountId/login") {
             parameter("pin", pin)
         }
 
     suspend fun withdraw(accountId: AccountId, token: Token, amount: Amount) =
-        jsonClient.post<Reciept>("$basePath/$accountId/withdraw") {
+        jsonClient.post<Response>("$basePath/$accountId/withdraw") {
             parameter("token", token)
             parameter("amount", amount)
         }
 
     suspend fun deposit(accountId: AccountId, token: Token, amount: Amount) =
-        jsonClient.post<Reciept>("$basePath/$accountId/deposit") {
+        jsonClient.post<Response>("$basePath/$accountId/deposit") {
             parameter("token", token)
             parameter("amount", amount)
         }
 
     suspend fun balance(accountId: AccountId, token: Token) =
-        jsonClient.get<Reciept>("$basePath/$accountId/balance") {
+        jsonClient.get<Response>("$basePath/$accountId/balance") {
             parameter("token", token)
         }
 
     suspend fun history(accountId: AccountId, token: Token) =
-        jsonClient.get<Reciept>("$basePath/$accountId/history") {
+        jsonClient.get<Response>("$basePath/$accountId/history") {
             parameter("token", token)
         }
 
     suspend fun logout(accountId: AccountId, token: Token) =
-        jsonClient.put<Reciept>("$basePath/$accountId/logout") {
+        jsonClient.put<Response>("$basePath/$accountId/logout") {
             parameter("token", token)
         }
 

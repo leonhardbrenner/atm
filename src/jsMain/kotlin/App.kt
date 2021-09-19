@@ -1,7 +1,7 @@
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import model.AccountId
-import model.Reciept
+import model.Response
 import model.Token
 import react.*
 import react.dom.div
@@ -12,7 +12,7 @@ const val initialDisplay = "What would you like to do?"
 external interface AppState : RState {
     var accountId: AccountId?
     var token: Token?
-    var reciept: Reciept?
+    var response: Response?
     var display: String?
 }
 
@@ -23,7 +23,7 @@ class App : RComponent<RProps, AppState>() {
             setState {
                 accountId = null
                 token = null
-                reciept = null
+                response = null
                 display = initialDisplay
             }
         }
