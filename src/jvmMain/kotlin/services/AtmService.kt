@@ -99,6 +99,8 @@ class AuthorizationService @Inject constructor(
                 throw Exception("Token has expired.")
             //Todo - update the expiration
             authorizationTokenDao.update(result.copy(expiration = now + lifespan))
+            if (accountId != result.accountId)
+                throw Exception("Authorization token does not belong to this account.")
             result.accountId
         }
     }
@@ -106,8 +108,12 @@ class AuthorizationService @Inject constructor(
     /**
      * This should lookup the account token and make sure that it is not expired.
      */
-    fun endSession(token: Token) = transaction { //Todo - do this with token
-        authorizationTokenDao.destroyByToken(token)
+    fun endSession(accountId: AccountId, token: Token) = transaction { //Todo - do this with token
+        authorizationTokenDao.getByToken(token)?.let { result ->
+            if (accountId != result.accountId)
+                throw Exception("Authorization token does not belong to this account.")
+            authorizationTokenDao.destroyByToken(token)
+        }
     }
 }
 
@@ -221,72 +227,8 @@ class AtmService @Inject constructor(
         }
 
     fun logout(accountId: AccountId, token: Token) = transaction {
-        authorizationService.endSession(token)
+        authorizationService.endSession(accountId, token)
     }
 
-}
-
-class AtmSession @Inject constructor(
-    val atmService: AtmService
-) {
-    var accountId: AccountId? = null
-    var token: Token? = null
-
-    object Module : AbstractModule() {
-        override fun configure() {
-            //bind(CoroutineDatabase::class.java).toInstance(database())
-        }
-    }
-
-    fun login(attrAccountId: AccountId, pin: Pin) = atmService.login(attrAccountId, pin).let { reciept ->
-        accountId = attrAccountId
-        token = reciept.token
-    }
-    fun logout() = token?.let { atmService.logout(accountId!!, it) }
-    fun handleMessage(message: String): Response = message.split(' ').let { message ->
-        val command = message.first()
-        when (command) {
-            "balance" -> {
-                atmService.balance(accountId!!, token!!)
-            }
-            "withdraw" -> {
-                val amount = message[1]!!.toDouble()
-                atmService.withdraw(accountId!!, token!!, amount)
-            }
-            "deposit" -> {
-                val amount = message[1]!!.toDouble()
-                atmService.deposit(accountId!!, token!!, amount)
-            }
-            "history" -> {
-                atmService.history(accountId!!, token!!)
-            }
-            else -> throw Exception("Unknown command [$message]")
-        }
-    }
-}
-
-
-fun main(args:Array<String>) {
-    DatabaseFactory.init()
-    val atm = Guice.createInjector(AtmSession.Module).getInstance<AtmSession>()
-
-    val accountId = "1434597300"
-    val pin = "4557"
-    val commands = listOf(
-        "balance",
-        "withdraw 22.33",
-        "deposit 200.00",
-        "history",
-    )
-    atm.login(accountId, pin)
-    commands.forEach { message ->
-        println(atm.handleMessage(message))
-    }
-    atm.logout()
-    try {
-        atm.handleMessage("balance")
-    } catch (ex: Exception) {
-        print("Expected failure")
-    }
 }
 

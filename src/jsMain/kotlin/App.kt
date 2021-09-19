@@ -75,6 +75,15 @@ class App : RComponent<RProps, AppState>() {
                     }
                 }
             }
+            "logout" -> {
+                scope.launch {
+                    Api.logout(state.accountId!!, state.token!!)
+                    setState {
+                        accountId = null
+                        token = null
+                    }
+                }
+            }
             else -> throw Exception("Unknown command [$message]")
         }
     }
