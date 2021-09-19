@@ -16,6 +16,16 @@ external interface AppState : RState {
     var display: String?
 }
 
+//XXX - Amount dispensed <=> deposited
+fun Response.display() =
+    """
+        ${amount?.let { "Amount dispensed: $it; " }?: ""} 
+        ${balance?.let { "Current balance: $it; " }?: ""} 
+        ${history?.let { "History:" + it.joinToString(", ") + "; "}?: ""}
+        ${accountError?.let { "Account Error: $it; " }?: ""} 
+        ${machineError?.let { "Machine Error: $it; " }?: ""} 
+""".trimIndent()
+
 class App : RComponent<RProps, AppState>() {
 
     override fun AppState.init() {
@@ -31,60 +41,72 @@ class App : RComponent<RProps, AppState>() {
 
     fun handleInput(text: String) = text.split(' ').let { message ->
         val command = message.first()
-        when (command) {
-            "login" -> {
-                scope.launch {
-                    val receipt = Api.login(accountId = message[1], pin = message[2])
-                    setState {
-                        accountId = message[1]
-                        token = receipt.token
+        if (state.token == null && !listOf("authorize", "logout", "end").contains(command)) { //Todo -> enum
+            setState {
+                display = "Authorization required."
+            }
+        } else {
+            when (command) {
+                "authorize" -> {
+                    scope.launch {
+                        val response = Api.authorize(accountId = message[1], pin = message[2])
+                        setState {
+                            accountId = message[1]
+                            token = response.token
+                        }
+                        setState {
+                            display = if (response.token != null)
+                                "${state.accountId} successfully authorized."
+                            else
+                                "Authorization failed."
+                        }
                     }
                 }
-            }
-            "balance" -> {
-                scope.launch {
-                    val receipt = Api.balance(accountId = state.accountId!!, token = state.token!!)
-                    setState {
-                        display = receipt.toString()
+                "logout" -> {
+                    scope.launch {
+                        Api.logout(state.accountId!!, state.token!!)
+                        setState {
+                            accountId = null
+                            token = null
+                        }
                     }
                 }
-            }
-            "withdraw" -> {
-                val amount = message[1]!!.toDouble()
-                scope.launch {
-                    val receipt = Api.withdraw(state.accountId!!, state.token!!, amount)
-                    setState {
-                        display = receipt.toString()
+                "balance" -> {
+                    scope.launch {
+                        val response = Api.balance(accountId = state.accountId!!, token = state.token!!)
+                        setState {
+                            display = response.display()
+                        }
                     }
                 }
-            }
-            "deposit" -> {
-                val amount = message[1]!!.toDouble()
-                scope.launch {
-                    val receipt = Api.deposit(state.accountId!!, state.token!!, amount)
-                    setState {
-                        display = receipt.toString()
+                "withdraw" -> {
+                    val amount = message[1]!!.toDouble()
+                    scope.launch {
+                        val response = Api.withdraw(state.accountId!!, state.token!!, amount)
+                        setState {
+                            display = response.display()
+                        }
                     }
                 }
-            }
-            "history" -> {
-                scope.launch {
-                    val receipt = Api.history(state.accountId!!, state.token!!)
-                    setState {
-                        display = receipt.toString()
+                "deposit" -> {
+                    val amount = message[1]!!.toDouble()
+                    scope.launch {
+                        val response = Api.deposit(state.accountId!!, state.token!!, amount)
+                        setState {
+                            display = response.display()
+                        }
                     }
                 }
-            }
-            "logout" -> {
-                scope.launch {
-                    Api.logout(state.accountId!!, state.token!!)
-                    setState {
-                        accountId = null
-                        token = null
+                "history" -> {
+                    scope.launch {
+                        val response = Api.history(state.accountId!!, state.token!!)
+                        setState {
+                            display = response.display()
+                        }
                     }
                 }
+                else -> throw Exception("Unknown command [$message]")
             }
-            else -> throw Exception("Unknown command [$message]")
         }
     }
 

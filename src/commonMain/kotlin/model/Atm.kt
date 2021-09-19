@@ -17,14 +17,4 @@ data class Response(
     val history: List<AtmDto.Transaction>? = null,
     val accountError: String? = null,
     val machineError: String? = null
-) {
-    //XXX - Amount dispensed <=> deposited
-    override fun toString() =
-        """
-        ${amount?.let { "Amount dispensed: $it; " }?: ""} 
-        ${balance?.let { "Current balance: $it; " }?: ""} 
-        ${history?.let { "History:" + it.joinToString(", ") + "; "}?: ""}
-        ${accountError?.let { "Account Error: $it; " }?: ""} 
-        ${machineError?.let { "Machine Error: $it; " }?: ""} 
-""".trimIndent()
-}
+)

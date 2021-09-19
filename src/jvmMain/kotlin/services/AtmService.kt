@@ -194,7 +194,7 @@ class AtmService @Inject constructor(
     val transactionDao: TransactionDao
 ) {
 
-    fun login(accountId: AccountId, pin: Pin) =
+    fun authorize(accountId: AccountId, pin: Pin) =
         Response().let {
             try {
                 it.copy(token = authorizationService.verifyPin(accountId, pin))
@@ -202,6 +202,10 @@ class AtmService @Inject constructor(
                 it.copy(accountError = ex.message!!)
             }
         }
+
+    fun logout(accountId: AccountId, token: Token) = transaction {
+        authorizationService.endSession(accountId, token)
+    }
 
     fun balance(accountId: AccountId, token: Token): Response {
         authorizationService.verifyToken(accountId, token) //Todo - move this to AtmSession
@@ -225,10 +229,6 @@ class AtmService @Inject constructor(
                 history = transaction { transactionDao.getByAccountId(accountId) } //Todo - Move to a service
             )
         }
-
-    fun logout(accountId: AccountId, token: Token) = transaction {
-        authorizationService.endSession(accountId, token)
-    }
 
 }
 

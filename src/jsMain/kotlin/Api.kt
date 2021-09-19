@@ -14,10 +14,15 @@ val jsonClient = HttpClient {
 }
 
 object Api {
-    //login 1434597300 4557
-    suspend fun login(accountId: AccountId, pin: Pin) =
-        jsonClient.get<Response>("$basePath/$accountId/login") {
+    //   authorize 1434597300 4557
+    suspend fun authorize(accountId: AccountId, pin: Pin) =
+        jsonClient.get<Response>("$basePath/$accountId/authorize") {
             parameter("pin", pin)
+        }
+
+    suspend fun logout(accountId: AccountId, token: Token) =
+        jsonClient.put<Unit>("$basePath/$accountId/logout") {
+            parameter("token", token)
         }
 
     suspend fun withdraw(accountId: AccountId, token: Token, amount: Amount) =
@@ -39,11 +44,6 @@ object Api {
 
     suspend fun history(accountId: AccountId, token: Token) =
         jsonClient.get<Response>("$basePath/$accountId/history") {
-            parameter("token", token)
-        }
-
-    suspend fun logout(accountId: AccountId, token: Token) =
-        jsonClient.put<Unit>("$basePath/$accountId/logout") {
             parameter("token", token)
         }
 
