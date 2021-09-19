@@ -1,15 +1,16 @@
 package applications
 
 import com.google.inject.AbstractModule
+import generated.routers.AtmRouter
 import javax.inject.Inject
 import io.ktor.routing.*
 
 class CoreApplication @Inject constructor(
-    //val detailedSeed: SeedsRouting.DetailedSeed,
+    val atmRouter: AtmRouter,
     ) {
 
     fun routesFrom(routing: Routing) {
-        //detailedSeed.routes(routing)
+        atmRouter.routes(routing)
     }
 
     object Module : AbstractModule() {
