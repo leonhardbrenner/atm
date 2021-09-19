@@ -13,10 +13,17 @@ class AtmRouter @Inject constructor(
 ) {
     fun routes(routing: Routing) = routing.route("/accounts/{accountId}") {
 
-        get("/login") {
+        get("/authorize") {
             val accountId = call.parameters["accountId"]!!
             val pin = call.parameters["pin"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-            call.respond( atmService.login(accountId, pin) )
+            call.respond( atmService.authorize(accountId, pin) )
+        }
+
+        put("/logout") {
+            val accountId = call.parameters["accountId"]!!
+            val token = call.parameters["token"] ?: return@put call.respond(HttpStatusCode.BadRequest)
+            atmService.logout(accountId, token)
+            call.respond( HttpStatusCode.OK )
         }
 
         post("/withdraw") {
@@ -55,13 +62,6 @@ class AtmRouter @Inject constructor(
             val accountId = call.parameters["accountId"]!!
             val token = call.parameters["token"] ?: return@get call.respond(HttpStatusCode.BadRequest)
             call.respond( atmService.history(accountId, token) )
-        }
-
-        put("/logout") {
-            val accountId = call.parameters["accountId"]!!
-            val token = call.parameters["token"] ?: return@put call.respond(HttpStatusCode.BadRequest)
-            atmService.logout(accountId, token)
-            call.respond( HttpStatusCode.OK )
         }
 
     }

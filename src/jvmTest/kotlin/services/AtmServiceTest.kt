@@ -272,7 +272,7 @@ class AtmServiceTest {
         val mockLedgerService = mock<LedgerService>()
         val mockTransactionDao = mock<TransactionDao>()
         val service = AtmService(mockAuthorizationService, mockLedgerService, mockTransactionDao)
-        service.login(accountId, pin)
+        service.authorize(accountId, pin)
         verify(mockAuthorizationService).verifyPin(any(), any())
     }
 
@@ -354,11 +354,11 @@ class AtmServiceTest {
         val mockAtmService = mock<AtmService>()
         val cli = AtmSession(mockAtmService)
         cli.handleMessage("login ${accountId} ${pin}")
-        verify(mockAtmService).login(eq(accountId), eq(pin))
+        verify(mockAtmService).authorize(eq(accountId), eq(pin))
     }
 
     val mockAtmService = mock<AtmService> {
-        on { login(accountId, pin) }.then {
+        on { authorize(accountId, pin) }.then {
             token
         }
     }

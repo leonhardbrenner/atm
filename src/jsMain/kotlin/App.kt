@@ -41,15 +41,15 @@ class App : RComponent<RProps, AppState>() {
 
     fun handleInput(text: String) = text.split(' ').let { message ->
         val command = message.first()
-        if (state.token == null && !listOf("login", "logout", "end").contains(command)) {
+        if (state.token == null && !listOf("authorize", "logout", "end").contains(command)) { //Todo -> enum
             setState {
                 display = "Authorization required."
             }
         } else {
             when (command) {
-                "login" -> {
+                "authorize" -> {
                     scope.launch {
-                        val response = Api.login(accountId = message[1], pin = message[2])
+                        val response = Api.authorize(accountId = message[1], pin = message[2])
                         setState {
                             accountId = message[1]
                             token = response.token
