@@ -43,7 +43,7 @@ object Api {
         }
 
     suspend fun logout(accountId: AccountId, token: Token) =
-        jsonClient.put<Response>("$basePath/$accountId/logout") {
+        jsonClient.put<Unit>("$basePath/$accountId/logout") {
             parameter("token", token)
         }
 

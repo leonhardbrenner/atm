@@ -57,10 +57,11 @@ class AtmRouter @Inject constructor(
             call.respond( atmService.history(accountId, token) )
         }
 
-        get("/logout") {
+        put("/logout") {
             val accountId = call.parameters["accountId"]!!
-            val token = call.parameters["token"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-            call.respond( atmService.logout(accountId, token) )
+            val token = call.parameters["token"] ?: return@put call.respond(HttpStatusCode.BadRequest)
+            atmService.logout(accountId, token)
+            call.respond( HttpStatusCode.OK )
         }
 
     }
