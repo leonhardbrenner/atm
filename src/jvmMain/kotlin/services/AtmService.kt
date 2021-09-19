@@ -119,20 +119,20 @@ class LedgerService @Inject constructor(
     val transactionDao: TransactionDao
     ) {
 
-    fun withdraw(accountId: AccountId, amount: Amount): Reciept = transaction {
+    fun withdraw(accountId: AccountId, amount: Amount): Response = transaction {
         //XXX - Needs to come from config. It hardcoded to match fixtures
         val machineLedger = machineDao.getBySerialNumber(SERIAL_NUMBER_HACK)
         val customerLedger = ledgerDao.getByAccountId(accountId)
 
         var fees = 0
         var adjustedAmount = (amount / 20) * 20
-        var reciept = Reciept()
+        var response = Response()
         when {
             (machineLedger.balance < 20) -> {
-                    reciept.copy(machineError = """Unable to process your withdrawal at this time.""")
+                    response.copy(machineError = """Unable to process your withdrawal at this time.""")
                 }
                 amount > machineLedger.balance -> {
-                    reciept.copy(machineError = """Unable to dispense full amount requested at this time""")
+                    response.copy(machineError = """Unable to dispense full amount requested at this time""")
                     adjustedAmount = machineLedger.balance
                 }
         }
@@ -141,13 +141,13 @@ class LedgerService @Inject constructor(
             // Unable to dispense full amount requested at this time
             // Unable to process your withdrawal at this time.
             customerLedger.balance < 0 -> {
-                reciept.copy(accountError = """Your account is overdrawn! You may not make withdrawals at this time.""")
+                response.copy(accountError = """Your account is overdrawn! You may not make withdrawals at this time.""")
             }
             adjustedAmount < customerLedger.balance -> {
-                reciept.copy(amount = adjustedAmount)
+                response.copy(amount = adjustedAmount)
             }
             adjustedAmount > customerLedger.balance -> {
-                reciept.copy(
+                response.copy(
                     amount = adjustedAmount,
                     accountError = "You have been charged an overdraft fee of $5. Current balance: <balance>")
                 fees += 5
@@ -160,23 +160,23 @@ class LedgerService @Inject constructor(
         val now = now()
         AtmDto.Transaction(-1, accountId, now, totalAmount).let {
             transactionDao.create(it)
-            Reciept(it.amount, updatedRecord.balance)
+            Response(it.amount, updatedRecord.balance)
         }
     }
 
-    fun deposit(accountId: AccountId, amount: Amount): Reciept = transaction {
+    fun deposit(accountId: AccountId, amount: Amount): Response = transaction {
         val record = ledgerDao.getByAccountId(accountId)
         val updatedRecord = record.copy(balance = record.balance + amount)
         ledgerDao.update(updatedRecord)
         val now = now()
         AtmDto.Transaction(-1, accountId, now, amount).let {
             transactionDao.create(it)
-            Reciept(it.amount, updatedRecord.balance)
+            Response(it.amount, updatedRecord.balance)
         }
     }
 
-    fun balance(accountId: AccountId): Reciept = transaction {
-        Reciept(balance = ledgerDao.getByAccountId(accountId).balance)
+    fun balance(accountId: AccountId): Response = transaction {
+        Response(balance = ledgerDao.getByAccountId(accountId).balance)
     }
 }
 
@@ -189,7 +189,7 @@ class AtmService @Inject constructor(
 ) {
 
     fun login(accountId: AccountId, pin: Pin) =
-        Reciept().let {
+        Response().let {
             try {
                 it.copy(token = authorizationService.verifyPin(accountId, pin))
             } catch (ex: Exception) {
@@ -197,7 +197,7 @@ class AtmService @Inject constructor(
             }
         }
 
-    fun balance(accountId: AccountId, token: Token): Reciept {
+    fun balance(accountId: AccountId, token: Token): Response {
         authorizationService.verifyToken(accountId, token) //Todo - move this to AtmSession
         return ledgerService.balance(accountId)
     }
@@ -215,7 +215,7 @@ class AtmService @Inject constructor(
     fun history(accountId: AccountId, token: Token) =
         authorizationService.verifyToken(accountId, token).let { accountId ->
             //Todo - make a transaction service and move this there.
-            Reciept(
+            Response(
                 history = transaction { transactionDao.getByAccountId(accountId) } //Todo - Move to a service
             )
         }
@@ -243,7 +243,7 @@ class AtmSession @Inject constructor(
         token = reciept.token
     }
     fun logout() = token?.let { atmService.logout(accountId!!, it) }
-    fun handleMessage(message: String): Reciept = message.split(' ').let { message ->
+    fun handleMessage(message: String): Response = message.split(' ').let { message ->
         val command = message.first()
         when (command) {
             "balance" -> {
