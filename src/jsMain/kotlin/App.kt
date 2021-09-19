@@ -34,27 +34,47 @@ class App : RComponent<RProps, AppState>() {
         when (command) {
             "login" -> {
                 scope.launch {
-                    val newToken = Api.login(accountId = message[1], pin = message[2]).token
+                    val receipt = Api.login(accountId = message[1], pin = message[2])
                     setState {
                         accountId = message[1]
-                        token = newToken
+                        token = receipt.token
                     }
                 }
             }
-            //"balance" -> {
-            //    scope.launch { Api.balance(accountId!!, token!!) }
-            //}
-            //"withdraw" -> {
-            //    val amount = message[1]!!.toDouble()
-            //    scope.launch { Api.withdraw(accountId!!, token!!, amount) }
-            //}
-            //"deposit" -> {
-            //    val amount = message[1]!!.toDouble()
-            //    scope.launch { Api.deposit(accountId!!, token!!, amount) }
-            //}
-            //"history" -> {
-            //    scope.launch { Api.history(accountId!!, token!!) }
-            //}
+            "balance" -> {
+                scope.launch {
+                    val receipt = Api.balance(accountId = state.accountId!!, token = state.token!!)
+                    setState {
+                        display = receipt.toString()
+                    }
+                }
+            }
+            "withdraw" -> {
+                val amount = message[1]!!.toDouble()
+                scope.launch {
+                    val receipt = Api.withdraw(state.accountId!!, state.token!!, amount)
+                    setState {
+                        display = receipt.toString()
+                    }
+                }
+            }
+            "deposit" -> {
+                val amount = message[1]!!.toDouble()
+                scope.launch {
+                    val receipt = Api.deposit(state.accountId!!, state.token!!, amount)
+                    setState {
+                        display = receipt.toString()
+                    }
+                }
+            }
+            "history" -> {
+                scope.launch {
+                    val receipt = Api.history(state.accountId!!, state.token!!)
+                    setState {
+                        display = receipt.toString()
+                    }
+                }
+            }
             else -> throw Exception("Unknown command [$message]")
         }
     }
@@ -62,7 +82,6 @@ class App : RComponent<RProps, AppState>() {
     override fun RBuilder.render() {
         div {
             + (state.display?:"")
-            + (state.token?:"")
             inputComponent {
                 onSubmit = {
                     handleInput(it)

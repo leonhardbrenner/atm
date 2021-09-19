@@ -216,7 +216,7 @@ class AtmService @Inject constructor(
         authorizationService.verifyToken(accountId, token).let { accountId ->
             //Todo - make a transaction service and move this there.
             Reciept(
-                history = transactionDao.getByAccountId(accountId)
+                history = transaction { transactionDao.getByAccountId(accountId) } //Todo - Move to a service
             )
         }
 
@@ -249,17 +249,14 @@ class AtmSession @Inject constructor(
             "balance" -> {
                 atmService.balance(accountId!!, token!!)
             }
-            //transaction.post()
             "withdraw" -> {
                 val amount = message[1]!!.toDouble()
                 atmService.withdraw(accountId!!, token!!, amount)
             }
-            //transaction.post()
             "deposit" -> {
                 val amount = message[1]!!.toDouble()
                 atmService.deposit(accountId!!, token!!, amount)
             }
-            //transaction.get() = index()
             "history" -> {
                 atmService.history(accountId!!, token!!)
             }
