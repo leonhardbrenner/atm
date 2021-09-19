@@ -1,7 +1,9 @@
 package services
 
+import Receipt
 import com.nhaarman.mockitokotlin2.*
 import generated.model.AtmDto
+import model.Response
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -47,7 +49,7 @@ class AtmServiceTest {
             mockAuthorizationPinDao,
             mockAuthorizationTokenDao
         )
-        val result = service.verifyToken(token)
+        val result = service.verifyToken(accountId, token)
         verify(mockAuthorizationTokenDao).update(any())
         assertEquals(accountId, result)
     }
@@ -56,12 +58,16 @@ class AtmServiceTest {
     @Test
     fun `AuthorizationService - endSession - smoketest`() {
         val mockAuthorizationPinDao = mock<AuthorizationPinDao>()
-        val mockAuthorizationTokenDao = mock<AuthorizationTokenDao>()
+        val mockAuthorizationTokenDao = mock<AuthorizationTokenDao> {
+            on { getByToken(any()) }.then {
+                AtmDto.AuthorizationToken(2, accountId, token, Long.MAX_VALUE)
+            }
+        }
         val service = AuthorizationService(
             mockAuthorizationPinDao,
             mockAuthorizationTokenDao
         )
-        service.endSession(token)
+        service.endSession(accountId, token)
         verify(mockAuthorizationTokenDao).destroyByToken(any())
     }
 
@@ -263,7 +269,7 @@ class AtmServiceTest {
         val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
         val result = service.balance(accountId)
         verify(mockLedgerDao).getByAccountId(any())
-        assertEquals(ledgerRecord.balance, result)
+        assertEquals(ledgerRecord.balance, result.balance)
     }
 
     @Test
@@ -279,64 +285,66 @@ class AtmServiceTest {
     @Test
     fun `AtmService - balance - smoketest`() {
         val mockAuthorizationService = mock<AuthorizationService>() {
-            on { verifyToken(any()) }.then {
+            on { verifyToken(any(), any()) }.then {
                 accountId
             }
         }
         val mockLedgerService = mock<LedgerService> {
             on { balance(eq(accountId)) }.then {
-                ledgerRecord.balance
+                Response(
+                    balance = ledgerRecord.balance
+                )
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
         val service = AtmService(mockAuthorizationService, mockLedgerService, mockTransactionDao)
-        service.balance(token)
-        verify(mockAuthorizationService).verifyToken(any())
+        service.balance(accountId, token)
+        verify(mockAuthorizationService).verifyToken(any(), any())
         verify(mockLedgerService).balance(any())
     }
 
     @Test
     fun `AtmService - withdraw - smoketest`() {
         val mockAuthorizationService = mock<AuthorizationService>() {
-            on { verifyToken(any()) }.then {
+            on { verifyToken(any(), any()) }.then {
                 accountId
             }
         }
         val mockLedgerService = mock<LedgerService>()
         val mockTransactionDao = mock<TransactionDao>()
         val service = AtmService(mockAuthorizationService, mockLedgerService, mockTransactionDao)
-        service.withdraw(token, amount)
-        verify(mockAuthorizationService).verifyToken(any())
+        service.withdraw(accountId, token, amount)
+        verify(mockAuthorizationService).verifyToken(any(), any())
         verify(mockLedgerService).withdraw(any(), any())
     }
 
     @Test
     fun `AtmService - deposit - smoketest`() {
         val mockAuthorizationService = mock<AuthorizationService>() {
-            on { verifyToken(any()) }.then {
+            on { verifyToken(any(), any()) }.then {
                 accountId
             }
         }
         val mockLedgerService = mock<LedgerService>()
         val mockTransactionDao = mock<TransactionDao>()
         val service = AtmService(mockAuthorizationService, mockLedgerService, mockTransactionDao)
-        service.deposit(token, amount)
-        verify(mockAuthorizationService).verifyToken(any())
+        service.deposit(accountId, token, amount)
+        verify(mockAuthorizationService).verifyToken(any(), any())
         verify(mockLedgerService).deposit(any(), any())
     }
 
     @Test
     fun `AtmService - history - smoketest`() {
         val mockAuthorizationService = mock<AuthorizationService>() {
-            on { verifyToken(any()) }.then {
+            on { verifyToken(any(), any()) }.then {
                 accountId
             }
         }
         val mockLedgerService = mock<LedgerService>()
         val mockTransactionDao = mock<TransactionDao>()
         val service = AtmService(mockAuthorizationService, mockLedgerService, mockTransactionDao)
-        service.history(token)
-        verify(mockAuthorizationService).verifyToken(any())
+        service.history(accountId, token)
+        verify(mockAuthorizationService).verifyToken(any(), any())
         verify(mockTransactionDao).getByAccountId(any())
     }
 
@@ -346,56 +354,8 @@ class AtmServiceTest {
         val mockLedgerService = mock<LedgerService>()
         val mockTransactionDao = mock<TransactionDao>()
         val service = AtmService(mockAuthorizationService, mockLedgerService, mockTransactionDao)
-        service.logout(token)
-        verify(mockAuthorizationService).endSession(any())
+        service.logout(accountId, token)
+        verify(mockAuthorizationService).endSession(any(), any())
     }
 
-    @Test fun `AtmSession - cli - login`(){
-        val mockAtmService = mock<AtmService>()
-        val cli = AtmSession(mockAtmService)
-        cli.handleMessage("login ${accountId} ${pin}")
-        verify(mockAtmService).authorize(eq(accountId), eq(pin))
-    }
-
-    val mockAtmService = mock<AtmService> {
-        on { authorize(accountId, pin) }.then {
-            token
-        }
-    }
-
-    @Test fun `AtmSession - cli - balance`(){
-        val cli = AtmSession(mockAtmService)
-        cli.handleMessage("login ${accountId} ${pin}")
-        cli.handleMessage("balance")
-        verify(mockAtmService).balance(eq(token))
-    }
-
-    @Test fun `AtmSession - cli - withdraw`(){
-        val cli = AtmSession(mockAtmService)
-        cli.handleMessage("login ${accountId} ${pin}")
-        cli.handleMessage("withdraw $amount")
-        verify(mockAtmService).withdraw(eq(token), eq(amount))
-    }
-
-    @Test fun `AtmSession - cli - deposit`(){
-        val cli = AtmSession(mockAtmService)
-        cli.handleMessage("login ${accountId} ${pin}")
-        cli.handleMessage("deposit $amount")
-        verify(mockAtmService).deposit(eq(token), eq(amount))
-    }
-
-    @Test fun `AtmSession - cli - history`(){
-        val cli = AtmSession(mockAtmService)
-        cli.handleMessage("login ${accountId} ${pin}")
-        cli.handleMessage("history")
-        verify(mockAtmService).history(eq(token))
-    }
-
-    @Test fun `AtmSession - cli - logout`(){
-        val cli = AtmSession(mockAtmService)
-        cli.handleMessage("login ${accountId} ${pin}")
-        cli.handleMessage("logout")
-        verify(mockAtmService).logout(eq(token))
-        assertEquals(null, cli.token)
-    }
 }

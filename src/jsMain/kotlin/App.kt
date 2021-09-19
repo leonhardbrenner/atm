@@ -1,5 +1,8 @@
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import kotlinx.css.WhiteSpace
+import kotlinx.css.br
+import kotlinx.css.p
 import model.AccountId
 import model.Response
 import model.Token
@@ -19,11 +22,11 @@ external interface AppState : RState {
 //XXX - Amount dispensed <=> deposited
 fun Response.display() =
     """
-        ${amount?.let { "Amount dispensed: $it; " }?: ""} 
-        ${balance?.let { "Current balance: $it; " }?: ""} 
-        ${history?.let { "History:" + it.joinToString(", ") + "; "}?: ""}
-        ${accountError?.let { "Account Error: $it; " }?: ""} 
-        ${machineError?.let { "Machine Error: $it; " }?: ""} 
+        ${amount?.let { "Amount dispensed: $it" } }?: ""} 
+        ${balance?.let { "Current balance: $it" }?: ""} 
+        ${history?.let { "History:" + it.joinToString(", ") + ""}?: ""}
+        ${accountError?.let { "Account Error: $it" }?: ""} 
+        ${machineError?.let { "Machine Error: $it" }?: ""} 
 """.trimIndent()
 
 class App : RComponent<RProps, AppState>() {
