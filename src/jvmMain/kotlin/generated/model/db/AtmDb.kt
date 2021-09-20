@@ -151,17 +151,20 @@ object AtmDb {
 
   object Transaction {
     fun select(source: ResultRow) = AtmDto.Transaction(source[Table.id].value,
-        source[Table.accountId], source[Table.timestamp], source[Table.amount])
+        source[Table.accountId], source[Table.timestamp], source[Table.amount],
+        source[Table.balance])
     fun insert(it: InsertStatement<EntityID<Int>>, source: Atm.Transaction) {
       it[Table.accountId] = source.accountId
       it[Table.timestamp] = source.timestamp
       it[Table.amount] = source.amount
+      it[Table.balance] = source.balance
     }
 
     fun update(it: UpdateStatement, source: Atm.Transaction) {
       it[Table.accountId] = source.accountId
       it[Table.timestamp] = source.timestamp
       it[Table.amount] = source.amount
+      it[Table.balance] = source.balance
     }
 
     object Table : IntIdTable("Transaction") {
@@ -170,6 +173,8 @@ object AtmDb {
       val timestamp: Column<Long> = long("timestamp")
 
       val amount: Column<Double> = double("amount")
+
+      val balance: Column<Double> = double("balance")
     }
 
     class Entity(
@@ -180,6 +185,8 @@ object AtmDb {
       var timestamp: Long by Table.timestamp
 
       var amount: Double by Table.amount
+
+      var balance: Double by Table.balance
 
       companion object : IntEntityClass<Entity>(Table)
     }
