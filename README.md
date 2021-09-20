@@ -1,6 +1,6 @@
 ## Atm implementation in Kolin
 
-https://user-images.githubusercontent.com/12137736/134089262-8d73901e-5729-457f-b542-683019cca6d9.mp4
+https://user-images.githubusercontent.com/12137736/134090382-75b08673-dd53-41b3-b544-5584694b7aff.mp4
 
 # Implementation
 
