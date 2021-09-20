@@ -173,51 +173,63 @@ class LedgerService @Inject constructor(
     inner class Withdraw(val accountId: AccountId, val amount: Amount) {
         val machineLedger by lazy { machineDao.getBySerialNumber(SERIAL_NUMBER_HACK) }
         val customerLedger by lazy { ledgerDao.getByAccountId(accountId) }
-        var machineError: String? = null
 
-        val adjustedAmount by lazy {
+        val adjustedAmount get() =
             ((amount / 20).toInt() * 20.0).let {
-                if (amount > machineLedger.balance) {
-                    machineError = """Unable to dispense full amount requested at this time"""
-                    machineLedger.balance
-               } else
-                    it
+                when {
+                    machineLedger.balance < 20 ->
+                        null
+                    amount > machineLedger.balance ->
+                        machineLedger.balance
+                    else -> it
+                }
             }
-        }
+
+        val machineError get() =
+                when {
+                    machineLedger.balance < 20 ->
+                        "Unable to process your withdrawal at this time."
+                    amount > machineLedger.balance ->
+                        "Unable to dispense full amount requested at this time"
+                    else -> null
+                }
+
+        val accountError get() =
+            when  {
+                customerLedger.balance < 0.0 ->
+                    "Your account is overdrawn! You may not make withdrawals at this time."
+                customerLedger.balance < (adjustedAmount?:0.0) ->
+                    "You have been charged an overdraft fee of $5. Current balance: <balance>"
+                else ->
+                    null
+            }
+
+        val fees get() =
+            when {
+                customerLedger.balance < (adjustedAmount?:0.0) ->
+                    5.00
+                else ->
+                    null
+            }
 
         val response get() = transaction {
-            var fees = 0
 
-            var response = Response()
-            if (machineLedger.balance < 20)
-                machineError = """Unable to process your withdrawal at this time."""
+            val totalAmount = (adjustedAmount?:0.0) + (fees?:0.0)
+            val balance = customerLedger.balance - totalAmount
 
-            when  {
-                //XXX - we need a machineDao so we can handle the following
-                // Unable to dispense full amount requested at this time
-                // Unable to process your withdrawal at this time.
-                customerLedger.balance < 0 -> {
-                    response.copy(accountError = """Your account is overdrawn! You may not make withdrawals at this time.""")
-                }
-                adjustedAmount < customerLedger.balance -> {
-                    response.copy(amount = adjustedAmount)
-                }
-                adjustedAmount > customerLedger.balance -> {
-                    response.copy(
-                        amount = adjustedAmount,
-                        accountError = "You have been charged an overdraft fee of $5. Current balance: <balance>")
-                    fees += 5
-                }
-            }
-            response.copy(machineError = machineError)
-            val totalAmount = adjustedAmount + fees
-            val updatedRecord = customerLedger.copy(balance = customerLedger.balance - totalAmount)
+            var response = Response(
+                amount = adjustedAmount,
+                balance = balance,
+                accountError = accountError,
+                machineError = machineError
+            )
+            val updatedRecord = customerLedger.copy(balance = balance)
             ledgerDao.update(updatedRecord)
 
             val now = now()
             AtmDto.Transaction(-1, accountId, now, totalAmount).let {
                 transactionDao.create(it)
-                Response(it.amount, updatedRecord.balance)
+                response
             }
 
         }
