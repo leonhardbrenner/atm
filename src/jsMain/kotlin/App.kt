@@ -9,6 +9,7 @@ import react.dom.*
 private val scope = MainScope()
 
 external interface AppState : RState {
+    var running: Boolean
     var accountId: AccountId?
     var token: Token?
     var response: Response?
@@ -19,6 +20,7 @@ class App : RComponent<RProps, AppState>() {
     override fun AppState.init() {
         scope.launch {
             setState {
+                running = true
                 accountId = null
                 token = null
                 response = null
@@ -30,7 +32,7 @@ class App : RComponent<RProps, AppState>() {
         val command = message.first()
         if (state.token == null && !listOf("authorize", "logout", "end").contains(command)) { //Todo -> enum
             setState {
-                response = state.response?.copy(authorizationError = "Authorization required.")
+                response = Response(authorizationError = "Authorization required.")
             }
         } else {
             when (command) {
@@ -58,6 +60,7 @@ class App : RComponent<RProps, AppState>() {
                         setState {
                             accountId = null
                             token = null
+                            response = null
                         }
                     }
                 }
@@ -95,18 +98,25 @@ class App : RComponent<RProps, AppState>() {
                         }
                     }
                 }
+                "end" -> {
+                    setState {
+                        this.running = false
+                    }
+                }
                 else -> throw Exception("Unknown command [$message]")
             }
         }
     }
-
+    fun Double.round(decimals: Int) = asDynamic().toFixed(decimals)
     override fun RBuilder.render() {
+        if (!state.running)
+            return
         div {
             state.response?.authorizationError?.let { p { + it } }
             state.response?.accountError?.let { p { + it } }
             state.response?.machineError?.let { p { + it } }
-            state.response?.amount?.let { p { + "Amount Dispensed: $it" } } //Todo - withdrawAmount and depositAmount
-            state.response?.balance?.let { p { + "Current balance: $it" } }
+            state.response?.amount?.let { p { + "Amount Dispensed: ${it.round(2)}" } } //Todo - withdrawAmount and depositAmount
+            state.response?.balance?.let { p { + "Current balance: ${it.round(2)}" } }
             state.response?.history?.let {
                 if (it.isEmpty())
                     +"No history found"
@@ -115,8 +125,8 @@ class App : RComponent<RProps, AppState>() {
                         it.forEach {
                             tr {
                                 td { +it.formatedDatetime }
-                                td { +it.amount.toString() }
-                                td { +it.balance.toString() }
+                                td { +it.amount.round(2).toString() }
+                                td { +it.balance.round(2).toString() }
                             }
                         }
                     }

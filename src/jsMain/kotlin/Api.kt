@@ -15,6 +15,7 @@ val jsonClient = HttpClient {
 
 object Api {
     //   authorize 1434597300 4557
+    //   authorize 2001377812 5950
     suspend fun authorize(accountId: AccountId, pin: Pin) =
         jsonClient.get<Response>("$basePath/$accountId/authorize") {
             parameter("pin", pin)

@@ -146,29 +146,31 @@ class LedgerService @Inject constructor(
 
         val machineError = when {
             machineLedger.balance < 20 ->
-                "Unable to process your withdrawal at this time."
+                return@transaction Response(
+                    machineError = "Unable to process your withdrawal at this time.")
             amount > machineLedger.balance ->
                 "Unable to dispense full amount requested at this time"
             else -> null
         }
 
-        val accountError = when  {
-            customerLedger.balance < 0.0 ->
-                "Your account is overdrawn! You may not make withdrawals at this time."
-            customerLedger.balance < (adjustedAmount?:0.0) ->
-                "You have been charged an overdraft fee of $5. Current balance: <balance>"
-            else ->
-                null
-        }
-
-        val fees = when {
+        val fee = when {
             customerLedger.balance < (adjustedAmount?:0.0) ->
                 5.00
             else ->
                 null
         }
 
-        val totalAmount = (adjustedAmount?:0.0) + (fees?:0.0)
+        val accountError = when  {
+            customerLedger.balance < 0.0 ->
+                return@transaction Response(
+                    accountError = "Your account is overdrawn! You may not make withdrawals at this time.")
+            customerLedger.balance < (adjustedAmount?:0.0) ->
+                "You have been charged an overdraft fee of $${fee}. Current balance: ${customerLedger.balance}"
+            else ->
+                null
+        }
+
+        val totalAmount = (adjustedAmount?:0.0) + (fee?:0.0)
 
         val newBalance = customerLedger.balance - totalAmount
 
