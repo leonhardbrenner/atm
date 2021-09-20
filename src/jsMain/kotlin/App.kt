@@ -22,7 +22,7 @@ external interface AppState : RState {
 //XXX - Amount dispensed <=> deposited
 fun Response.display() =
     """
-        ${amount?.let { "Amount dispensed: $it" } }?: ""} 
+        ${amount?.let { "Amount dispensed: $it" }?: ""} 
         ${balance?.let { "Current balance: $it" }?: ""} 
         ${history?.let { "History:" + it.joinToString(", ") + ""}?: ""}
         ${accountError?.let { "Account Error: $it" }?: ""} 
