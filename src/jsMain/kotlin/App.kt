@@ -11,7 +11,6 @@ private val scope = MainScope()
 external interface AppState : RState {
     var accountId: AccountId?
     var token: Token?
-    var authorizationMessage: String?
     var response: Response?
 }
 
@@ -22,7 +21,6 @@ class App : RComponent<RProps, AppState>() {
             setState {
                 accountId = null
                 token = null
-                authorizationMessage = null
                 response = null
             }
         }
@@ -32,22 +30,25 @@ class App : RComponent<RProps, AppState>() {
         val command = message.first()
         if (state.token == null && !listOf("authorize", "logout", "end").contains(command)) { //Todo -> enum
             setState {
-                authorizationMessage = "Authorization required."
+                response = state.response?.copy(authorizationError = "Authorization required.")
             }
         } else {
             when (command) {
                 "authorize" -> {
                     scope.launch {
-                        val response = Api.authorize(accountId = message[1], pin = message[2])
-                        setState {
-                            accountId = message[1]
-                            token = response.token
-                        }
-                        setState {
-                            authorizationMessage = if (response.token != null)
-                                "${state.accountId} successfully authorized."
-                            else
-                                "Authorization failed."
+                        Api.authorize(accountId = message[1], pin = message[2]).let {
+                            setState {
+                                accountId = message[1]
+                                token = it.token
+                            }
+                            setState {
+                                response = it.copy(
+                                    authorizationError = if (it.token != null)
+                                        "${state.accountId} successfully authorized."
+                                    else
+                                        "Authorization failed."
+                                )
+                            }
                         }
                     }
                 }
@@ -101,12 +102,16 @@ class App : RComponent<RProps, AppState>() {
 
     override fun RBuilder.render() {
         div {
-            state.authorizationMessage?.let { p { + "auth message: $it" } }
-            state.response?.accountError?.let { p { + "accountError: $it" } }
-            state.response?.machineError?.let { p { + "machineError: $it" } }
-            state.response?.amount?.let { p { + "amount: $it" } }
+            state.response?.authorizationError?.let { p { + it } }
+            state.response?.accountError?.let { p { + it } }
+            state.response?.machineError?.let { p { + it } }
+            state.response?.amount?.let { p { + "amount: $it" } } //Todo - withdrawAmount and depositAmount
             state.response?.balance?.let { p { + "balance: $it" } }
-            //state.response?.history.let { p { "auth message: $it" } }
+            state.response?.history?.let {
+                it.forEach {
+                    p { + "${it.timestamp} ${it.amount} ${it.balance}" }
+                }
+            }
             inputComponent {
                 onSubmit = {
                     handleInput(it)

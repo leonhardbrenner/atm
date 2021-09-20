@@ -1,8 +1,5 @@
 package services
 
-import com.authzee.kotlinguice4.getInstance
-import com.google.inject.AbstractModule
-import com.google.inject.Guice
 import generated.dao.AtmDao
 import generated.model.AtmDto
 import generated.model.db.AtmDb
@@ -125,51 +122,6 @@ class LedgerService @Inject constructor(
     val transactionDao: TransactionDao
     ) {
 
-    fun withdrawOld(accountId: AccountId, amount: Amount): Response = transaction {
-        //XXX - Needs to come from config. It hardcoded to match fixtures
-        val machineLedger = machineDao.getBySerialNumber(SERIAL_NUMBER_HACK)
-        val customerLedger = ledgerDao.getByAccountId(accountId)
-
-        var fees = 0
-        var adjustedAmount = (amount / 20) * 20
-        var response = Response()
-        when {
-            (machineLedger.balance < 20) -> {
-                    response.copy(machineError = """Unable to process your withdrawal at this time.""")
-                }
-                amount > machineLedger.balance -> {
-                    response.copy(machineError = """Unable to dispense full amount requested at this time""")
-                    adjustedAmount = machineLedger.balance
-                }
-        }
-        when  {
-            //XXX - we need a machineDao so we can handle the following
-            // Unable to dispense full amount requested at this time
-            // Unable to process your withdrawal at this time.
-            customerLedger.balance < 0 -> {
-                response.copy(accountError = """Your account is overdrawn! You may not make withdrawals at this time.""")
-            }
-            adjustedAmount < customerLedger.balance -> {
-                response.copy(amount = adjustedAmount)
-            }
-            adjustedAmount > customerLedger.balance -> {
-                response.copy(
-                    amount = adjustedAmount,
-                    accountError = "You have been charged an overdraft fee of $5. Current balance: <balance>")
-                fees += 5
-            }
-        }
-        val totalAmount = amount + fees
-        val updatedRecord = customerLedger.copy(balance = customerLedger.balance - totalAmount)
-        ledgerDao.update(updatedRecord)
-
-        val now = now()
-        AtmDto.Transaction(-1, accountId, now, totalAmount).let {
-            transactionDao.create(it)
-            Response(it.amount, updatedRecord.balance)
-        }
-    }
-
     fun withdraw(accountId: AccountId, amount: Amount): Response = transaction {
         val machineLedger = machineDao.getBySerialNumber(SERIAL_NUMBER_HACK)
         val customerLedger = ledgerDao.getByAccountId(accountId)
@@ -210,17 +162,17 @@ class LedgerService @Inject constructor(
 
         val totalAmount = (adjustedAmount?:0.0) + (fees?:0.0)
 
-        val balance = customerLedger.balance - totalAmount
+        val newBalance = customerLedger.balance - totalAmount
 
-        ledgerDao.update(
-            customerLedger.copy(balance = balance))
+        customerLedger.copy(balance = newBalance)
+        ledgerDao.update(customerLedger.copy(balance = newBalance))
         machineDao.update(
             machineLedger.copy(balance = machineLedger.balance - (adjustedAmount?:0.0)))
         transactionDao.create(
-            AtmDto.Transaction(-1, accountId, now(), totalAmount))
+            AtmDto.Transaction(-1, accountId, now(), -totalAmount, newBalance))
         Response(
             amount = adjustedAmount,
-            balance = balance,
+            balance = newBalance,
             accountError = accountError,
             machineError = machineError
         )
@@ -228,13 +180,14 @@ class LedgerService @Inject constructor(
 
     fun deposit(accountId: AccountId, amount: Amount): Response = transaction {
         val record = ledgerDao.getByAccountId(accountId)
-        val updatedRecord = record.copy(balance = record.balance + amount)
+        val newBalance = record.balance + amount
+        val updatedRecord = record.copy(balance = newBalance)
         ledgerDao.update(updatedRecord)
-        val now = now()
-        AtmDto.Transaction(-1, accountId, now, amount).let {
-            transactionDao.create(it)
-            Response(it.amount, updatedRecord.balance)
-        }
+        transactionDao.create(
+            AtmDto.Transaction(-1, accountId, now(), amount, newBalance))
+        Response(
+            balance = newBalance
+        )
     }
 
     fun balance(accountId: AccountId): Response = transaction {
@@ -254,34 +207,50 @@ class AtmService @Inject constructor(
         try {
             Response(token = authorizationService.verifyPin(accountId, pin))
         } catch (ex: Exception) {
-            Response(accountError = ex.message!!)
+            Response(authorizationError = ex.message!!)
         }
 
     fun logout(accountId: AccountId, token: Token) = transaction {
         authorizationService.endSession(accountId, token)
     }
 
-    fun balance(accountId: AccountId, token: Token): Response {
-        authorizationService.verifyToken(accountId, token) //Todo - move this to AtmSession
-        return ledgerService.balance(accountId)
-    }
+    fun balance(accountId: AccountId, token: Token): Response =
+        try {
+            authorizationService.verifyToken(accountId, token)
+            ledgerService.balance(accountId)
+        } catch (ex: Exception) {
+            Response(authorizationError = ex.message!!)
+        }
 
     fun withdraw(accountId: AccountId, token: Token, amount: Amount) =
-        authorizationService.verifyToken(accountId, token)?.let { accountId ->
+        try {
+            authorizationService.verifyToken(accountId, token)
             ledgerService.withdraw(accountId, amount)
+        } catch (ex: Exception) {
+            Response(authorizationError = ex.message!!)
         }
+
 
     fun deposit(accountId: AccountId, token: Token, amount: Amount) =
-        authorizationService.verifyToken(accountId, token)?.let { accountId ->
+        try {
+            authorizationService.verifyToken(accountId, token)
             ledgerService.deposit(accountId, amount)
+        } catch (ex: Exception) {
+            Response(authorizationError = ex.message!!)
         }
 
+
     fun history(accountId: AccountId, token: Token) =
-        authorizationService.verifyToken(accountId, token).let { accountId ->
-            //Todo - make a transaction service and move this there.
-            Response(
-                history = transaction { transactionDao.getByAccountId(accountId) } //Todo - Move to a service
-            )
+        try {
+            authorizationService.verifyToken(accountId, token)
+            transaction { //Todo - Move to a service
+                Response(
+                    history = transactionDao.getByAccountId(accountId)
+                )
+            }
+        } catch (ex: Exception) {
+            Response(authorizationError = ex.message!!)
         }
+
 
 }

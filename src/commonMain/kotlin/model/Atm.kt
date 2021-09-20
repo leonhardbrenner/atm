@@ -15,6 +15,7 @@ data class Response(
     val balance: Amount? = null,
     val token: Token? = null,
     val history: List<AtmDto.Transaction>? = null,
+    val authorizationError: String? = null,
     val accountError: String? = null,
     val machineError: String? = null
 )

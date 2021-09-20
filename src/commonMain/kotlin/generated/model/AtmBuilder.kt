@@ -56,12 +56,14 @@ interface AtmBuilder {
     var id: Int?,
     var accountId: String?,
     var timestamp: Long?,
-    var amount: Double?
+    var amount: Double?,
+    var balance: Double?
   ) {
     fun build(): Atm.Transaction = AtmDto.Transaction(
     id ?: throw IllegalArgumentException("id is not nullable"),
     accountId ?: throw IllegalArgumentException("accountId is not nullable"),
     timestamp ?: throw IllegalArgumentException("timestamp is not nullable"),
-    amount ?: throw IllegalArgumentException("amount is not nullable")
+    amount ?: throw IllegalArgumentException("amount is not nullable"),
+    balance ?: throw IllegalArgumentException("balance is not nullable")
     )}
 }
