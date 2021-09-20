@@ -23,39 +23,12 @@ https://github.com/leonhardbrenner/atm/blob/main/src/jvmMain/kotlin/services/Atm
   The test are organized in the same order as the AtmService's classes and methods and use nomanclature: `<Service> - <method> - <sub test>`
 
 # Running
-  Note: you will need a postgres database in my case I use test/test@test.
-  Note: not positive this is correct I run from IntelliJ there is a little green arrow next to main at the bottom of AtmServiceKt.
-  Note: I am not reading from stdin I just feed it from a list of strings for now.
   
-    ./gradlew run services.AtmServiceKt
+    ./gradlew run
   
-  Note: You will get an error and need these environment variable.
+  Note: You will get an error you will need a postgres database in my case: test/test@test and these environment variables:
   
     DB_URL=jdbc:postgresql://localhost/test;DB_USER=test;DB_PASSWORD=test
-
-### Note: this is not fully implemented there are a list of follow up PRs key points they are fixing:
-
-  https://github.com/leonhardbrenner/atm/pull/4 - now merged and these bullets are handled.
-  
-  add machine so ledger service can know how much money is in the machine I am assuming the ATM keeps the machine ledger centralized so it can know the balance in case of theft.
-
-  return and handle messages and exceptions to be dispayed. Probably just a toString on a data class.
-    
-  implement the withdraw logic in the LedgerService
-  
-  https://github.com/leonhardbrenner/atm/pull/5 - now merged and this bullets are handleds.
-    
-  last pr implemented the withraw logic and stubbed the test. I will fill in the tests here.
-
-  https://github.com/leonhardbrenner/atm/pull/6 - not started
-
-last pr handled the messaging by returning a receipts now I need to do this for deposit and such.
-
-rename atmSession -> atmMachine and give it a display and cash dispenser then have it dispense also I think I forgot to decrement the machine ledger.
-
-I don't think I am displaying transactions correctly for history and it should probably be part of reciept. We should have an interface for Reciept with only amount and display() as members.
-
-authorization messages should have a place in our machine display.
 
 # Solution starting from my template project:
 
