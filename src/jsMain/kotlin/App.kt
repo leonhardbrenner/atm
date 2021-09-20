@@ -4,8 +4,7 @@ import model.AccountId
 import model.Response
 import model.Token
 import react.*
-import react.dom.div
-import react.dom.p
+import react.dom.*
 
 private val scope = MainScope()
 
