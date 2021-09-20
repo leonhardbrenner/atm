@@ -250,13 +250,11 @@ class AtmService @Inject constructor(
     val transactionDao: TransactionDao
 ) {
 
-    fun authorize(accountId: AccountId, pin: Pin) =
-        Response().let {
-            try {
-                it.copy(token = authorizationService.verifyPin(accountId, pin))
-            } catch (ex: Exception) {
-                it.copy(accountError = ex.message!!)
-            }
+    fun authorize(accountId: AccountId, pin: Pin): Response =
+        try {
+            Response(token = authorizationService.verifyPin(accountId, pin))
+        } catch (ex: Exception) {
+            Response(accountError = ex.message!!)
         }
 
     fun logout(accountId: AccountId, token: Token) = transaction {
@@ -287,4 +285,3 @@ class AtmService @Inject constructor(
         }
 
 }
-
