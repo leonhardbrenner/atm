@@ -105,12 +105,21 @@ class App : RComponent<RProps, AppState>() {
             state.response?.authorizationError?.let { p { + it } }
             state.response?.accountError?.let { p { + it } }
             state.response?.machineError?.let { p { + it } }
-            state.response?.amount?.let { p { + "amount: $it" } } //Todo - withdrawAmount and depositAmount
-            state.response?.balance?.let { p { + "balance: $it" } }
+            state.response?.amount?.let { p { + "Amount Dispensed: $it" } } //Todo - withdrawAmount and depositAmount
+            state.response?.balance?.let { p { + "Current balance: $it" } }
             state.response?.history?.let {
-                it.forEach {
-                    p { + "${it.timestamp} ${it.amount} ${it.balance}" }
-                }
+                if (it.isEmpty())
+                    +"No history found"
+                else
+                    table {
+                        it.forEach {
+                            tr {
+                                td { +it.formatedDatetime }
+                                td { +it.amount.toString() }
+                                td { +it.balance.toString() }
+                            }
+                        }
+                    }
             }
             inputComponent {
                 onSubmit = {

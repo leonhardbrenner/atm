@@ -10,6 +10,14 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 import javax.inject.Inject
 
+fun formatTimestamp(timestamp: Long) = with(Calendar.getInstance(Locale.ENGLISH)) {
+    setTimeInMillis(timestamp)
+    "%04d-%02d-%02d %02d:%02d:%02d".format(
+        get(Calendar.YEAR), get(Calendar.MONTH), get(Calendar.DAY_OF_MONTH),
+        get(Calendar.HOUR), get(Calendar.MINUTE), get(Calendar.SECOND)
+    )
+}
+
 class AuthorizationPinDao: AtmDao.AuthorizationPin {
     fun getByAccountId(accountId: AccountId) = AtmDb.AuthorizationPin.Table.select {
         AtmDb.AuthorizationPin.Table.accountId.eq(accountId)
@@ -245,7 +253,9 @@ class AtmService @Inject constructor(
             authorizationService.verifyToken(accountId, token)
             transaction { //Todo - Move to a service
                 Response(
-                    history = transactionDao.getByAccountId(accountId)
+                    history = transactionDao.getByAccountId(accountId).map {
+                        Transaction(it, formatTimestamp(it.timestamp))
+                    }
                 )
             }
         } catch (ex: Exception) {
