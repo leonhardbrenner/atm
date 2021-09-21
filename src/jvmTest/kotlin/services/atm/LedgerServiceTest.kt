@@ -2,6 +2,7 @@ package services.atm
 
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import generated.model.AtmDto
 import org.junit.Test
@@ -147,8 +148,8 @@ class LedgerServiceTest {
         assertEquals(null, response.authorizationError)
         assertEquals("Unable to process your withdrawal at this time.", response.machineError)
         verify(mockLedgerDao).getByAccountId(any())
-        //verify(mockLedgerDao).update(any())
-        //verify(mockTransactionDao).create(any())
+        verify(mockLedgerDao, never()).update(any())
+        verify(mockTransactionDao, never()).create(any())
     }
 
     @Test
@@ -182,8 +183,8 @@ class LedgerServiceTest {
         assertEquals(null, response.authorizationError)
         assertEquals(null, response.machineError)
         verify(mockLedgerDao).getByAccountId(any())
-        //verify(mockLedgerDao).update(any())
-        //verify(mockTransactionDao).create(any())
+        verify(mockLedgerDao, never()).update(any())
+        verify(mockTransactionDao, never()).create(any())
     }
 
     @Test
