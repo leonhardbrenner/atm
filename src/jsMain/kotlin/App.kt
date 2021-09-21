@@ -38,7 +38,7 @@ class App : RComponent<RProps, AppState>() {
             when (command) {
                 "authorize" -> {
                     scope.launch {
-                        Api.authorize(accountId = message[1], pin = message[2]).let {
+                        AtmApi.authorize(accountId = message[1], pin = message[2]).let {
                             setState {
                                 accountId = message[1]
                                 token = it.token
@@ -56,7 +56,7 @@ class App : RComponent<RProps, AppState>() {
                 }
                 "logout" -> {
                     scope.launch {
-                        Api.logout(state.accountId!!, state.token!!)
+                        AtmApi.logout(state.accountId!!, state.token!!)
                         setState {
                             accountId = null
                             token = null
@@ -66,7 +66,7 @@ class App : RComponent<RProps, AppState>() {
                 }
                 "balance" -> {
                     scope.launch {
-                        val response = Api.balance(accountId = state.accountId!!, token = state.token!!)
+                        val response = AtmApi.balance(accountId = state.accountId!!, token = state.token!!)
                         setState {
                             this.response = response
                         }
@@ -75,7 +75,7 @@ class App : RComponent<RProps, AppState>() {
                 "withdraw" -> {
                     val amount = message[1]!!.toDouble()
                     scope.launch {
-                        val response = Api.withdraw(state.accountId!!, state.token!!, amount)
+                        val response = AtmApi.withdraw(state.accountId!!, state.token!!, amount)
                         setState {
                             this.response = response
                         }
@@ -84,7 +84,7 @@ class App : RComponent<RProps, AppState>() {
                 "deposit" -> {
                     val amount = message[1]!!.toDouble()
                     scope.launch {
-                        val response = Api.deposit(state.accountId!!, state.token!!, amount)
+                        val response = AtmApi.deposit(state.accountId!!, state.token!!, amount)
                         setState {
                             this.response = response
                         }
@@ -92,7 +92,7 @@ class App : RComponent<RProps, AppState>() {
                 }
                 "history" -> {
                     scope.launch {
-                        val response = Api.history(state.accountId!!, state.token!!)
+                        val response = AtmApi.history(state.accountId!!, state.token!!)
                         setState {
                             this.response = response
                         }

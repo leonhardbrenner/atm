@@ -24,8 +24,11 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 object AtmDb {
   object AuthorizationPin {
-    fun select(source: ResultRow) = AtmDto.AuthorizationPin(source[Table.id].value,
-        source[Table.accountId], source[Table.pin])
+    fun select(source: ResultRow) = AtmDto.AuthorizationPin(
+      source[Table.id].value,
+      source[Table.accountId], source[Table.pin]
+    )
+
     fun insert(it: InsertStatement<EntityID<Int>>, source: Atm.AuthorizationPin) {
       it[Table.accountId] = source.accountId
       it[Table.pin] = source.pin
@@ -54,8 +57,11 @@ object AtmDb {
   }
 
   object AuthorizationToken {
-    fun select(source: ResultRow) = AtmDto.AuthorizationToken(source[Table.id].value,
-        source[Table.accountId], source[Table.token], source[Table.expiration])
+    fun select(source: ResultRow) = AtmDto.AuthorizationToken(
+      source[Table.id].value,
+      source[Table.accountId], source[Table.token], source[Table.expiration]
+    )
+
     fun insert(it: InsertStatement<EntityID<Int>>, source: Atm.AuthorizationToken) {
       it[Table.accountId] = source.accountId
       it[Table.token] = source.token
@@ -90,8 +96,11 @@ object AtmDb {
   }
 
   object Ledger {
-    fun select(source: ResultRow) = AtmDto.Ledger(source[Table.id].value, source[Table.accountId],
-        source[Table.balance])
+    fun select(source: ResultRow) = AtmDto.Ledger(
+      source[Table.id].value, source[Table.accountId],
+      source[Table.balance]
+    )
+
     fun insert(it: InsertStatement<EntityID<Int>>, source: Atm.Ledger) {
       it[Table.accountId] = source.accountId
       it[Table.balance] = source.balance
@@ -120,8 +129,11 @@ object AtmDb {
   }
 
   object Machine {
-    fun select(source: ResultRow) = AtmDto.Machine(source[Table.id].value,
-        source[Table.serialNumber], source[Table.balance])
+    fun select(source: ResultRow) = AtmDto.Machine(
+      source[Table.id].value,
+      source[Table.serialNumber], source[Table.balance]
+    )
+
     fun insert(it: InsertStatement<EntityID<Int>>, source: Atm.Machine) {
       it[Table.serialNumber] = source.serialNumber
       it[Table.balance] = source.balance
@@ -150,9 +162,12 @@ object AtmDb {
   }
 
   object Transaction {
-    fun select(source: ResultRow) = AtmDto.Transaction(source[Table.id].value,
-        source[Table.accountId], source[Table.timestamp], source[Table.amount],
-        source[Table.balance])
+    fun select(source: ResultRow) = AtmDto.Transaction(
+      source[Table.id].value,
+      source[Table.accountId], source[Table.timestamp], source[Table.amount],
+      source[Table.balance]
+    )
+
     fun insert(it: InsertStatement<EntityID<Int>>, source: Atm.Transaction) {
       it[Table.accountId] = source.accountId
       it[Table.timestamp] = source.timestamp

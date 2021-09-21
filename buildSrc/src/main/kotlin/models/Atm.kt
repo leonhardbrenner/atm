@@ -8,7 +8,7 @@ interface Atm {
         val pin: String
     )
 
-    class AuthorizationToken( //Make this Node
+    class AuthorizationToken(
         val id: Int,
         val accountId: String,
         val token: String,
