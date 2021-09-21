@@ -47,13 +47,13 @@ class LedgerServiceTest {
     }
 
     @Test
-    fun `LedgerService - withdraw - templete delete after other subtests are done`() {
+    fun `LedgerService - withdraw - overdrawn with this transaction`() {
         /**
-         * If account has not been overdrawn, returns balance after withdrawal in the format:
+         * If the account has been overdrawn with this transaction, removes a further $5 from their account, and returns:
          *      Amount dispensed: $<x>
-         *      Current balance: <balance>
+         *      You have been charged an overdraft fee of $5. Current balance: <balance>
          */
-        val ledgerRecord = AtmDto.Ledger(123, accountId, 333.22)
+        val ledgerRecord = AtmDto.Ledger(123, accountId, 33.22)
         val mockLedgerDao = mock<LedgerDao>() {
             on { getByAccountId(any()) }.then {
                 ledgerRecord
@@ -67,39 +67,21 @@ class LedgerServiceTest {
             }
         }
         val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
-        val reciept = service.withdraw(accountId, 20.33)
+        val response = service.withdraw(accountId, 40.0)
+        val accountError = "You have been charged an overdraft fee of \$5.0. Current balance: 33.22"
+        assertEquals(accountError, response.accountError)
+        assertEquals(40.0, response.amount)
+        assertEquals(-11.780000000000001, response.balance)
+        assertEquals(null, response.token)
+        assertEquals(null, response.history)
+        assertEquals(null, response.token)
+        assertEquals(null, response.authorizationError)
+        assertEquals(null, response.machineError)
         verify(mockLedgerDao).getByAccountId(any())
         verify(mockLedgerDao).update(any())
         verify(mockTransactionDao).create(any())
     }
 
-    @Test
-    fun `LedgerService - withdraw - overdrawn with this transaction`() {
-        /**
-         * If the account has been overdrawn with this transaction, removes a further $5 from their account, and returns:
-         *      Amount dispensed: $<x>
-         *      You have been charged an overdraft fee of $5. Current balance: <balance>
-         */
-        //XXX - Not implemented
-        val ledgerRecord = AtmDto.Ledger(123, accountId, 333.22)
-        val mockLedgerDao = mock<LedgerDao>() {
-            on { getByAccountId(any()) }.then {
-                ledgerRecord
-            }
-        }
-        val mockTransactionDao = mock<TransactionDao>()
-        val machineRecord = AtmDto.Machine(123, serialNumber, 6660.0)
-        val mockMachineDao = mock<MachineDao> {
-            on { this.getBySerialNumber(machineRecord.serialNumber) }.then {
-                machineRecord
-            }
-        }
-        val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
-        service.withdraw(accountId, 20.33)
-        verify(mockLedgerDao).getByAccountId(any())
-        verify(mockLedgerDao).update(any())
-        verify(mockTransactionDao).create(any())
-    }
     @Test
     fun `LedgerService - withdraw - not enough money`() {
         /**
@@ -107,7 +89,6 @@ class LedgerServiceTest {
          * requested, the withdrawal amount should be adjusted to be the amount in the machine and this should be prepended to the return value:
          *      Unable to dispense full amount requested at this time.
          */
-        //XXX - Not implemented
         val ledgerRecord = AtmDto.Ledger(123, accountId, 333.22)
         val mockLedgerDao = mock<LedgerDao>() {
             on { getByAccountId(any()) }.then {
@@ -115,25 +96,33 @@ class LedgerServiceTest {
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val machineRecord = AtmDto.Machine(123, serialNumber, 6660.0)
+        val machineRecord = AtmDto.Machine(123, serialNumber, 60.00)
         val mockMachineDao = mock<MachineDao> {
             on { this.getBySerialNumber(machineRecord.serialNumber) }.then {
                 machineRecord
             }
         }
         val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
-        service.withdraw(accountId, 20.33)
+        val response = service.withdraw(accountId, 100.0)
+        assertEquals(null, response.accountError)
+        assertEquals(60.0, response.amount)
+        assertEquals(273.22, response.balance)
+        assertEquals(null, response.token)
+        assertEquals(null, response.history)
+        assertEquals(null, response.token)
+        assertEquals(null, response.authorizationError)
+        assertEquals("Unable to dispense full amount requested at this time", response.machineError)
         verify(mockLedgerDao).getByAccountId(any())
         verify(mockLedgerDao).update(any())
         verify(mockTransactionDao).create(any())
     }
+
     @Test
     fun `LedgerService - withdraw - no money`() {
         /**
          * If instead there is no money in the machine, the return value should be this and only this:
          *      Unable to process your withdrawal at this time.
          */
-        //XXX - Not implemented
         val ledgerRecord = AtmDto.Ledger(123, accountId, 333.22)
         val mockLedgerDao = mock<LedgerDao>() {
             on { getByAccountId(any()) }.then {
@@ -141,17 +130,25 @@ class LedgerServiceTest {
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val machineRecord = AtmDto.Machine(123, serialNumber, 6660.0)
+        val machineRecord = AtmDto.Machine(123, serialNumber, 0.00)
         val mockMachineDao = mock<MachineDao> {
             on { this.getBySerialNumber(machineRecord.serialNumber) }.then {
                 machineRecord
             }
         }
         val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
-        service.withdraw(accountId, 20.33)
+        val response = service.withdraw(accountId, 100.0)
+        assertEquals(null, response.accountError)
+        assertEquals(null, response.amount)
+        assertEquals(null, response.balance)
+        assertEquals(null, response.token)
+        assertEquals(null, response.history)
+        assertEquals(null, response.token)
+        assertEquals(null, response.authorizationError)
+        assertEquals("Unable to process your withdrawal at this time.", response.machineError)
         verify(mockLedgerDao).getByAccountId(any())
-        verify(mockLedgerDao).update(any())
-        verify(mockTransactionDao).create(any())
+        //verify(mockLedgerDao).update(any())
+        //verify(mockTransactionDao).create(any())
     }
 
     @Test
@@ -161,25 +158,32 @@ class LedgerServiceTest {
          * and return only this:
          *      Your account is overdrawn! You may not make withdrawals at this time.
          */
-        //XXX - Not implemented
-        val ledgerRecord = AtmDto.Ledger(123, accountId, 333.22)
+        val ledgerRecord = AtmDto.Ledger(123, accountId, -10.0) //Todo - 0 did not work but is also not consiedered overdrawn.
         val mockLedgerDao = mock<LedgerDao>() {
             on { getByAccountId(any()) }.then {
                 ledgerRecord
             }
         }
         val mockTransactionDao = mock<TransactionDao>()
-        val machineRecord = AtmDto.Machine(123, serialNumber, 6660.0)
+        val machineRecord = AtmDto.Machine(123, serialNumber, 10000.00)
         val mockMachineDao = mock<MachineDao> {
             on { this.getBySerialNumber(machineRecord.serialNumber) }.then {
                 machineRecord
             }
         }
         val service = LedgerService(mockMachineDao, mockLedgerDao, mockTransactionDao)
-        service.withdraw(accountId, 20.33)
+        val response = service.withdraw(accountId, 100.0)
+        assertEquals("Your account is overdrawn! You may not make withdrawals at this time.", response.accountError)
+        assertEquals(null, response.amount)
+        assertEquals(null, response.balance)
+        assertEquals(null, response.token)
+        assertEquals(null, response.history)
+        assertEquals(null, response.token)
+        assertEquals(null, response.authorizationError)
+        assertEquals(null, response.machineError)
         verify(mockLedgerDao).getByAccountId(any())
-        verify(mockLedgerDao).update(any())
-        verify(mockTransactionDao).create(any())
+        //verify(mockLedgerDao).update(any())
+        //verify(mockTransactionDao).create(any())
     }
 
     @Test
